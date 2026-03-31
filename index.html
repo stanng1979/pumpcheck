@@ -30,7 +30,7 @@ body{font-family:var(--mono);background:var(--navy-10);color:var(--navy);font-si
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
 /* PANEL */
-.panel{position:fixed;bottom:90px;right:16px;z-index:999;width:min(360px,calc(100vw - 32px));background:var(--white);border:2px solid var(--border);border-top:3px solid var(--amber);border-radius:3px;box-shadow:0 8px 28px rgba(31,41,51,.18);overflow:hidden;transform:scale(.87) translateY(14px);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.34,1.4,.64,1),opacity .18s;transform-origin:bottom right;display:flex;flex-direction:column;max-height:80vh}
+.panel{position:fixed;bottom:90px;right:16px;z-index:999;width:min(360px,calc(100vw - 32px));background:var(--white);border:2px solid var(--border);border-top:3px solid var(--amber);border-radius:3px;box-shadow:0 8px 28px rgba(31,41,51,.18);overflow:hidden;transform:scale(.87) translateY(14px);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.34,1.4,.64,1),opacity .18s;transform-origin:bottom right;display:flex;flex-direction:column;max-height:82vh}
 .panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
 .panel-head{background:var(--navy);border-bottom:3px solid var(--amber);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .panel-logo{font-family:var(--sans);font-weight:800;font-size:.88rem;color:var(--white);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
@@ -66,20 +66,21 @@ select.ctl:focus{border-color:var(--amber)}
 .pill-count{font-family:var(--mono);font-weight:700;font-size:.65rem;color:var(--amber-text);text-transform:uppercase;letter-spacing:.08em}
 
 /* SETTINGS */
-.setting-row{display:flex;flex-direction:column;gap:5px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-.setting-row:last-of-type{border-bottom:none}
+.setting-row{display:flex;flex-direction:column;gap:6px;padding-bottom:13px;border-bottom:1px solid var(--border)}
+.setting-row:last-of-type{border-bottom:none;padding-bottom:0}
 .setting-label{font-family:var(--mono);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--amber-text)}
-.setting-desc{font-size:.65rem;color:var(--navy-60);line-height:1.6}
+.setting-desc{font-size:.67rem;color:var(--navy-60);line-height:1.65}
 .setting-desc strong{color:var(--navy);font-weight:700}
-.setting-input-row{display:flex;align-items:center;gap:8px;margin-top:3px}
+.setting-desc code{background:var(--navy-10);border:1px solid var(--border);padding:1px 5px;border-radius:2px;font-family:var(--mono);font-size:.62rem;color:var(--navy)}
+.setting-input-row{display:flex;align-items:center;gap:8px;margin-top:2px}
 .setting-input{background:var(--navy-10);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.82rem;font-weight:600;padding:8px 10px;border-radius:3px;outline:none;width:90px;transition:border-color .15s}
 .setting-input:focus{border-color:var(--amber)}
 .setting-unit{font-size:.68rem;color:var(--navy-60)}
 .setting-save{background:var(--amber);color:var(--navy);border:none;font-family:var(--sans);font-weight:800;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;padding:10px;border-radius:3px;cursor:pointer;width:100%;transition:opacity .15s;margin-top:4px}
 .setting-save:hover{opacity:.88}
-.baseline-info{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-left:3px solid var(--amber);border-radius:3px;padding:7px 10px;font-size:.65rem;color:var(--amber-text);line-height:1.5;margin-top:4px}
-.baseline-clear{background:none;border:1px solid var(--border);color:var(--navy-60);font-family:var(--mono);font-size:.62rem;padding:4px 8px;border-radius:3px;cursor:pointer;margin-top:5px;width:100%;transition:border-color .12s}
-.baseline-clear:hover{border-color:var(--pricey);color:var(--pricey)}
+.example-box{background:var(--navy-10);border:1.5px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:9px 11px;font-size:.65rem;color:var(--navy-60);line-height:1.7;margin-top:4px}
+.example-box strong{color:var(--navy)}
+.example-box .result{color:var(--amber-text);font-weight:700}
 
 /* DRAWER */
 .drawer{position:fixed;bottom:0;left:0;right:0;z-index:997;background:var(--white);border-top:3px solid var(--amber);box-shadow:0 -4px 20px rgba(31,41,51,.14);transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);height:42vh;display:flex;flex-direction:column}
@@ -95,16 +96,14 @@ select.pill-sort:focus{border-color:var(--amber)}
 /* CARDS */
 .card{padding:10px 14px;border-bottom:1.5px solid var(--border);cursor:pointer;transition:background .1s;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
 .card:hover{background:var(--amber-bg)}.card.on{background:var(--amber-bg);border-left:3px solid var(--amber);padding-left:11px}
-.c-rank{font-family:var(--mono);font-size:.55rem;color:var(--amber-text);margin-bottom:2px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
-.c-brand{font-family:var(--sans);font-weight:700;font-size:.82rem;margin-bottom:1px;color:var(--navy);display:flex;align-items:center;gap:6px}
-.c-star{background:none;border:none;cursor:pointer;font-size:.85rem;padding:0;line-height:1;opacity:.35;transition:opacity .15s,transform .15s;flex-shrink:0}
-.c-star:hover{opacity:1;transform:scale(1.2)}.c-star.starred{opacity:1}
+.c-rank{font-family:var(--mono);font-size:.55rem;color:var(--amber-text);margin-bottom:2px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:5px}
+.c-nearest-badge{font-family:var(--mono);font-size:.52rem;font-weight:700;background:var(--amber);color:var(--navy);padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.04em}
+.c-brand{font-family:var(--sans);font-weight:700;font-size:.82rem;margin-bottom:1px;color:var(--navy)}
 .c-addr{font-size:.62rem;color:var(--navy-60);line-height:1.4;margin-bottom:4px;text-decoration:none;display:block;transition:color .15s}
 .c-addr:hover{color:var(--amber-text);text-decoration:underline}
 .c-meta{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .c-dist{font-family:var(--mono);font-size:.55rem;background:var(--navy-10);border:1px solid var(--border);color:var(--navy-60);padding:2px 5px;border-radius:2px}
 .c-chip{font-family:var(--mono);font-size:.53rem;padding:2px 5px;border-radius:2px;border:1px solid var(--amber-border);color:var(--amber-text);background:var(--amber-bg)}
-.c-baseline-badge{font-family:var(--mono);font-size:.52rem;font-weight:700;background:var(--amber);color:var(--navy);padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em;display:inline-block;vertical-align:middle;margin-left:4px}
 .pcol{text-align:right}
 .mprice{font-family:var(--sans);font-weight:800;font-size:1.25rem;line-height:1}
 .cheap{color:var(--cheap)}.mid{color:var(--mid)}.pricey{color:var(--pricey)}
@@ -118,18 +117,22 @@ select.pill-sort:focus{border-color:var(--amber)}
 .oval{font-weight:600;color:var(--navy)}
 
 /* SAVING BADGE */
-.saving-block{margin-top:5px;padding:3px 7px;border-radius:3px;border:1.5px solid;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer}
+.saving-block{margin-top:5px;padding:4px 7px;border-radius:3px;border:1.5px solid;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;transition:opacity .15s}
+.saving-block:hover{opacity:.85}
 .saving-block.worth-it{background:#dcfce7;border-color:#86efac}
 .saving-block.small-saving{background:#fef9c3;border-color:#fde047}
 .saving-block.not-worth{background:#fee2e2;border-color:#fca5a5}
-.saving-block.is-ref{background:var(--amber-bg);border-color:var(--amber-border);cursor:default}
+.saving-block.is-nearest{background:var(--amber-bg);border-color:var(--amber-border);cursor:default}
+.saving-block.is-nearest:hover{opacity:1}
 .saving-amount{font-family:var(--mono);font-weight:700;font-size:.72rem;flex-shrink:0}
 .saving-amount.worth-it{color:#15803d}.saving-amount.small-saving{color:#a16207}
-.saving-amount.not-worth{color:#dc2626}.saving-amount.is-ref{color:var(--amber-text)}
-.saving-verdict{font-family:var(--mono);font-size:.62rem;font-weight:500;flex:1;text-align:right;color:var(--navy-60)}
-.saving-verdict.worth-it{color:#15803d}.saving-verdict.small-saving{color:#a16207}
-.saving-verdict.not-worth{color:#dc2626}.saving-verdict.is-ref{color:var(--amber-text);font-size:.58rem}
-.saving-detail{font-family:var(--mono);font-size:.55rem;color:var(--navy-60);margin-top:4px;padding:5px 7px;line-height:1.6;border-top:1px solid var(--border);display:none;background:var(--navy-10);border-radius:0 0 3px 3px}
+.saving-amount.not-worth{color:#dc2626}.saving-amount.is-nearest{color:var(--amber-text)}
+.saving-verdict{font-family:var(--mono);font-size:.62rem;color:var(--navy-60);flex:1;text-align:right}
+.saving-verdict.worth-it{color:#15803d;font-weight:600}
+.saving-verdict.small-saving{color:#a16207;font-weight:600}
+.saving-verdict.not-worth{color:#dc2626;font-weight:600}
+.saving-verdict.is-nearest{color:var(--amber-text);font-size:.6rem}
+.saving-detail{font-family:var(--mono);font-size:.58rem;color:var(--navy-60);margin-top:4px;padding:6px 8px;line-height:1.7;border-top:1px solid var(--border);display:none;background:var(--navy-10);border-radius:0 0 3px 3px}
 .saving-detail.open{display:block}
 
 /* LOADING */
@@ -209,7 +212,7 @@ select.pill-sort:focus{border-color:var(--amber)}
 
       <div class="setting-row">
         <div class="setting-label">⛽ Tank size</div>
-        <div class="setting-desc">How many litres you fill up in one visit. Used to calculate how much you save on fuel at a cheaper station. Most family cars hold 50–70L, smaller cars 35–45L.</div>
+        <div class="setting-desc">How many litres you fill up in one visit. Most family cars hold <strong>50–70L</strong>, smaller cars <strong>35–45L</strong>. This affects how much you save on fuel price alone.</div>
         <div class="setting-input-row">
           <input class="setting-input" id="litresSetting" type="number" min="10" max="120" value="40"/>
           <span class="setting-unit">litres</span>
@@ -218,7 +221,7 @@ select.pill-sort:focus{border-color:var(--amber)}
 
       <div class="setting-row">
         <div class="setting-label">🚗 Fuel economy</div>
-        <div class="setting-desc">Your car's miles per gallon. Used to calculate the cost of driving further to reach a cheaper station. Most petrol cars average 30–45 MPG. Check your trip computer or car spec sheet. A higher MPG means driving further costs you less.</div>
+        <div class="setting-desc">Your car's miles per gallon. Check your trip computer or car manual. Most petrol cars average <strong>30–45 MPG</strong>. A higher number means driving further costs you less, so it's more likely to be worth going to a cheaper station.</div>
         <div class="setting-input-row">
           <input class="setting-input" id="mpgSetting" type="number" min="10" max="200" value="40"/>
           <span class="setting-unit">MPG</span>
@@ -226,20 +229,33 @@ select.pill-sort:focus{border-color:var(--amber)}
       </div>
 
       <div class="setting-row">
-        <div class="setting-label">⭐ Reference station</div>
-        <div class="setting-desc">The station everything is compared against when calculating savings. Defaults to your nearest station. Tap ☆ on any result to set it as your personal reference — useful if you always use a particular station. Savings on each card show how much better or worse each alternative is vs this reference.</div>
-        <div class="baseline-info" id="baselineInfo" style="display:none"></div>
-        <button class="baseline-clear" id="baselineClearBtn" onclick="clearBaseline()" style="display:none">Remove reference station</button>
+        <div class="setting-label">🟢 Cheap price threshold</div>
+        <div class="setting-desc">Stations at or below this price show as <strong>green</strong>. You'd fill up here without hesitation. Pre-filled from the cheapest station in your last search.</div>
+        <div class="setting-input-row">
+          <input class="setting-input" id="cheapThreshold" type="number" min="50" max="300" value="148"/>
+          <span class="setting-unit">p/litre</span>
+        </div>
       </div>
 
       <div class="setting-row">
-        <div class="setting-label">📐 How savings work</div>
+        <div class="setting-label">🔴 Expensive price threshold</div>
+        <div class="setting-desc">Stations at or above this price show as <strong>red</strong>. You'd actively avoid these unless there's no alternative. Pre-filled from the most expensive station in your last search.</div>
+        <div class="setting-input-row">
+          <input class="setting-input" id="priceyThreshold" type="number" min="50" max="400" value="158"/>
+          <span class="setting-unit">p/litre</span>
+        </div>
+      </div>
+
+
         <div class="setting-desc">
-          <strong>Net saving = fuel saving − extra drive cost</strong><br><br>
-          Example: reference 149p, target 146p, 40L tank, 40MPG, 2 extra miles round trip:<br>
-          Fuel saving: 3p × 40L ÷ 100 = <strong>£1.20</strong><br>
-          Drive cost: 2mi ÷ 40MPG × 4.55 × 146p ÷ 100 = <strong>£0.33</strong><br>
-          Net = £1.20 − £0.33 = <strong>£0.87 → Worth it ✓</strong>
+          The app finds your <strong>nearest station</strong> to the postcode you entered. Every other station then shows whether detouring to get cheaper fuel is worth it — based on how much further it is from your postcode vs the nearest station.
+          <br><br>
+          <strong>Estimated net saving = fuel saving − cost of extra detour</strong>
+          <br><br>
+          Distance is measured from your postcode, not your actual route. If the cheaper station happens to be on your way, the real saving will be higher than shown. If it's in the opposite direction, it may be less. Use it as a guide, not an exact figure.
+        </div>
+        <div class="example-box" id="exampleBox">
+          Search for stations to see a worked example using your postcode and real prices.
         </div>
       </div>
 
@@ -271,61 +287,119 @@ L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
 L.control.zoom({position:'topright'}).addTo(map);
 
 // STATE
-let allStations=[], sorted=[], markers=[], circle=null;
-let panelOpen=false, drawerOpen=false;
+let allStations = [], sorted = [], markers = [], circle = null;
+let panelOpen = false, drawerOpen = false;
+let lastSearchLabel = ''; // what user typed as postcode
 
 // SETTINGS
 function getSettings() {
   return {
-    litres: parseFloat(localStorage.getItem('ep_litres') || '40'),
-    mpg:    parseFloat(localStorage.getItem('ep_mpg')    || '40')
+    litres:          parseFloat(localStorage.getItem('ep_litres')   || '40'),
+    mpg:             parseFloat(localStorage.getItem('ep_mpg')      || '40'),
+    cheapThreshold:  parseFloat(localStorage.getItem('ep_cheap')    || '148'),
+    priceyThreshold: parseFloat(localStorage.getItem('ep_pricey')   || '158')
   };
 }
 function saveSettings() {
-  const l = parseFloat(document.getElementById('litresSetting').value) || 40;
-  const m = parseFloat(document.getElementById('mpgSetting').value)    || 40;
-  localStorage.setItem('ep_litres', l);
-  localStorage.setItem('ep_mpg',    m);
+  const l  = parseFloat(document.getElementById('litresSetting').value)   || 40;
+  const m  = parseFloat(document.getElementById('mpgSetting').value)      || 40;
+  const c  = parseFloat(document.getElementById('cheapThreshold').value)  || 148;
+  const p  = parseFloat(document.getElementById('priceyThreshold').value) || 158;
+  localStorage.setItem('ep_litres',  l);
+  localStorage.setItem('ep_mpg',     m);
+  localStorage.setItem('ep_cheap',   c);
+  localStorage.setItem('ep_pricey',  p);
   const btn = document.querySelector('.setting-save');
   btn.textContent = '✓ Saved';
-  setTimeout(() => { btn.textContent = 'Save settings'; }, 1500);
+  setTimeout(function() { btn.textContent = 'Save settings'; }, 1500);
   renderResults();
 }
 function initSettingsPanel() {
   const s = getSettings();
-  document.getElementById('litresSetting').value = s.litres;
-  document.getElementById('mpgSetting').value    = s.mpg;
-  updateBaselineInfo();
+  document.getElementById('litresSetting').value  = s.litres;
+  document.getElementById('mpgSetting').value     = s.mpg;
+
+  // Pre-fill thresholds from current search results if available, else use saved values
+  if (allStations.length) {
+    const fuel   = document.getElementById('fuelSel').value;
+    const prices = allStations.map(function(st) { return getPrice(st, fuel); }).filter(Boolean);
+    if (prices.length) {
+      const minP = Math.min(...prices);
+      const maxP = Math.max(...prices);
+      // Only pre-fill if user hasn't saved custom values yet
+      if (!localStorage.getItem('ep_cheap'))  document.getElementById('cheapThreshold').value  = minP.toFixed(1);
+      else                                     document.getElementById('cheapThreshold').value  = s.cheapThreshold;
+      if (!localStorage.getItem('ep_pricey')) document.getElementById('priceyThreshold').value = maxP.toFixed(1);
+      else                                     document.getElementById('priceyThreshold').value = s.priceyThreshold;
+      return;
+    }
+  }
+  document.getElementById('cheapThreshold').value  = s.cheapThreshold;
+  document.getElementById('priceyThreshold').value = s.priceyThreshold;
+  updateExampleBox();
 }
 
-// BASELINE
-function getBaselineId()   { return localStorage.getItem('ep_baseline_id')   || null; }
-function getBaselineName() { return localStorage.getItem('ep_baseline_name') || ''; }
-function setBaseline(id, name) {
-  localStorage.setItem('ep_baseline_id',   id);
-  localStorage.setItem('ep_baseline_name', name);
-  updateBaselineInfo();
-  renderResults();
-}
-function clearBaseline() {
-  localStorage.removeItem('ep_baseline_id');
-  localStorage.removeItem('ep_baseline_name');
-  updateBaselineInfo();
-  renderResults();
-}
-function updateBaselineInfo() {
-  const id   = getBaselineId();
-  const info = document.getElementById('baselineInfo');
-  const btn  = document.getElementById('baselineClearBtn');
-  if (!info || !btn) return;
-  if (id) {
-    info.textContent   = '⭐ ' + getBaselineName() + ' — savings calculated against this station';
-    info.style.display = 'block';
-    btn.style.display  = 'block';
-  } else {
-    info.style.display = 'none';
-    btn.style.display  = 'none';
+// DYNAMIC EXAMPLE BOX
+function updateExampleBox() {
+  const box = document.getElementById('exampleBox');
+  if (!box) return;
+
+  // Need at least 2 stations and a search to have been done
+  if (!allStations.length || !lastSearchLabel) {
+    box.innerHTML = 'Search for stations to see a worked example using your postcode and real prices.';
+    return;
   }
+
+  const fuel = document.getElementById('fuelSel').value;
+  const { litres, mpg } = getSettings();
+
+  // Find nearest station
+  const nearest = allStations.slice().sort(function(a,b) { return (a.distance||999)-(b.distance||999); })[0];
+  const nearestPrice = getPrice(nearest, fuel);
+  const nearestDist  = parseFloat(nearest.distance) || 0;
+
+  // Find cheapest station (that isn't nearest)
+  const others = allStations.filter(function(s) {
+    return (s.id||s.slug||s.brand+s.address) !== (nearest.id||nearest.slug||nearest.brand+nearest.address);
+  });
+  const cheapest = others.slice().sort(function(a,b) { return (getPrice(a,fuel)||999)-(getPrice(b,fuel)||999); })[0];
+
+  if (!nearest || !cheapest || !nearestPrice) {
+    box.innerHTML = 'No price data available for example.';
+    return;
+  }
+
+  const cheapestPrice = getPrice(cheapest, fuel);
+  if (!cheapestPrice) { box.innerHTML = 'No price data available for example.'; return; }
+
+  const cheapestDist = parseFloat(cheapest.distance) || 0;
+  const priceDiff    = nearestPrice - cheapestPrice;
+  const fuelSaving   = priceDiff * litres / 100;
+  const extraMiles   = Math.max(0, (cheapestDist - nearestDist) * 2);
+  const driveCost    = (extraMiles / mpg) * 4.54609 * cheapestPrice / 100;
+  const netSaving    = fuelSaving - driveCost;
+
+  if (priceDiff <= 0) {
+    box.innerHTML = '<strong>Example from ' + lastSearchLabel + ':</strong><br>'
+      + 'Your nearest station (' + (nearest.brand||'Station') + ', ' + nearestDist.toFixed(1) + ' mi) is already the cheapest at ' + nearestPrice.toFixed(1) + 'p. No trade-off needed.';
+    return;
+  }
+
+  const verdict = netSaving > 1.00 ? 'Worth the drive ✓'
+    : netSaving > 0.20 ? 'Small saving'
+    : netSaving >= 0   ? 'Marginal'
+    : 'Not worth the extra drive';
+
+  box.innerHTML =
+    '<strong>Example from ' + lastSearchLabel + ':</strong><br><br>'
+    + 'Nearest: <strong>' + (nearest.brand||'Station') + '</strong> ' + nearestDist.toFixed(1) + ' mi at <strong>' + nearestPrice.toFixed(1) + 'p</strong><br>'
+    + 'Cheapest: <strong>' + (cheapest.brand||'Station') + '</strong> ' + cheapestDist.toFixed(1) + ' mi at <strong>' + cheapestPrice.toFixed(1) + 'p</strong><br><br>'
+    + 'Fuel saving: ' + priceDiff.toFixed(1) + 'p × ' + litres + 'L = <strong>£' + fuelSaving.toFixed(2) + '</strong><br>'
+    + (extraMiles > 0.05
+      ? 'Extra detour from ' + lastSearchLabel + ': ' + extraMiles.toFixed(1) + ' mi = <strong>£' + driveCost.toFixed(2) + ' cost</strong><br>'
+      : 'Similar distance — no meaningful detour<br>')
+    + 'Estimated net: <span class="result">£' + netSaving.toFixed(2) + ' — ' + verdict + '</span><br>'
+    + '<span style="color:#CBD2D9;font-size:.9em">Distance from postcode only — actual saving depends on your route</span>';
 }
 
 // TABS
@@ -343,7 +417,7 @@ function getPrice(s, fuel) {
   if (s.price && +s.price > 50) return +s.price;
   if (s.prices) {
     const keys = { E10:['E10','e10'], E5:['E5','e5'], B7:['B7','b7'], SDV:['SDV','sdv'] };
-    for (const k of keys[fuel] || []) {
+    for (const k of (keys[fuel] || [])) {
       if (s.prices[k] && +s.prices[k] > 50) return +s.prices[k];
     }
   }
@@ -361,8 +435,16 @@ function getAllFuelPrices(s) {
   }
   return result;
 }
-function pCol(p) { return !p ? '#aaa' : p <= 148 ? '#16a34a' : p <= 158 ? '#b45309' : '#dc2626'; }
-function pCls(p) { return !p ? '' : p <= 148 ? 'cheap' : p <= 158 ? 'mid' : 'pricey'; }
+function pCol(p) {
+  if (!p) return '#aaa';
+  const s = getSettings();
+  return p <= s.cheapThreshold ? '#16a34a' : p < s.priceyThreshold ? '#b45309' : '#dc2626';
+}
+function pCls(p) {
+  if (!p) return '';
+  const s = getSettings();
+  return p <= s.cheapThreshold ? 'cheap' : p < s.priceyThreshold ? 'mid' : 'pricey';
+}
 function pTag(price, prices) {
   if (!price || !prices.length) return null;
   const mn = Math.min(...prices), mx = Math.max(...prices);
@@ -371,57 +453,70 @@ function pTag(price, prices) {
 }
 
 // SAVINGS
-function calcSaving(s, baselinePrice, baselineDist) {
+function calcSaving(s, nearestPrice, nearestDist) {
   const { litres, mpg } = getSettings();
   const targetPrice = getPrice(s);
-  if (!targetPrice || !baselinePrice) return null;
+  if (!targetPrice || !nearestPrice) return null;
   const targetDist  = parseFloat(s.distance) || 0;
-  const grossSaving = (baselinePrice - targetPrice) * litres / 100;
-  const extraMiles  = Math.max(0, targetDist * 2 - baselineDist * 2);
+  const fuelSaving  = (nearestPrice - targetPrice) * litres / 100;
+  const extraMiles  = Math.max(0, (targetDist - nearestDist) * 2);
   const driveCost   = (extraMiles / mpg) * 4.54609 * targetPrice / 100;
-  const netSaving   = grossSaving - driveCost;
-  return { netSaving, grossSaving, driveCost, extraMiles, targetPrice, baselinePrice, litres };
+  const netSaving   = fuelSaving - driveCost;
+  return { netSaving, fuelSaving, driveCost, extraMiles, targetPrice, nearestPrice, litres };
 }
-function savingBlock(saving, isBaseline, idx) {
-  if (isBaseline) {
-    return '<div class="saving-block is-ref"><span class="saving-amount is-ref">⭐ Comparing from here</span><span class="saving-verdict is-ref">All savings measured against this station</span></div>';
+
+function savingBlock(saving, isNearest, idx) {
+  if (isNearest) {
+    return '<div class="saving-block is-nearest">'
+      + '<span class="saving-amount is-nearest">📍 Nearest to ' + (lastSearchLabel || 'your postcode') + '</span>'
+      + '<span class="saving-verdict is-nearest">No detour needed — detours measured from here</span>'
+      + '</div>';
   }
   if (!saving) return '';
-  const { netSaving, grossSaving, driveCost, extraMiles } = saving;
+  const { netSaving, fuelSaving, driveCost, extraMiles } = saving;
   let cls, verdict;
-  if      (netSaving > 1.00) { cls = 'worth-it';    verdict = 'Worth it ✓'; }
-  else if (netSaving > 0.20) { cls = 'small-saving'; verdict = 'Small saving'; }
-  else if (netSaving >= 0)   { cls = 'not-worth';    verdict = 'Marginal'; }
-  else                        { cls = 'not-worth';    verdict = 'Not worth it'; }
+  if      (netSaving > 1.00) { cls = 'worth-it';    verdict = 'Worth the detour ✓'; }
+  else if (netSaving > 0.20) { cls = 'small-saving'; verdict = 'Small saving on detour'; }
+  else if (netSaving >= 0)   { cls = 'not-worth';    verdict = 'Detour probably not worth it'; }
+  else                        { cls = 'not-worth';    verdict = 'Detour not worth it'; }
   const sign = netSaving >= 0 ? '+' : '−';
-  const detail = [
-    'Fuel saving: £' + grossSaving.toFixed(2) + ' (' + Math.abs(saving.baselinePrice - saving.targetPrice).toFixed(1) + 'p/L × ' + saving.litres + 'L)',
-    extraMiles > 0.05 ? 'Extra drive: ' + extraMiles.toFixed(1) + ' mi → £' + driveCost.toFixed(2) + ' cost' : 'Same distance as reference',
-    'Net: ' + sign + '£' + Math.abs(netSaving).toFixed(2)
-  ].join('<br>');
+  const detail =
+    'Fuel saving: £' + fuelSaving.toFixed(2) + ' (' + Math.abs(saving.nearestPrice - saving.targetPrice).toFixed(1) + 'p/L × ' + saving.litres + 'L)<br>'
+    + (extraMiles > 0.05
+      ? 'Extra distance from ' + lastSearchLabel + ': ' + extraMiles.toFixed(1) + ' mi → £' + driveCost.toFixed(2) + ' cost<br>'
+      : 'Similar distance from ' + lastSearchLabel + '<br>')
+    + 'Estimated net: ' + sign + '£' + Math.abs(netSaving).toFixed(2) + '<br>'
+    + '<span style="color:#CBD2D9;font-size:.9em">Distance measured from your postcode — actual saving depends on your route</span>';
   return '<div class="saving-block ' + cls + '" onclick="event.stopPropagation();toggleDetail(' + idx + ')">'
-    + '<span class="saving-amount ' + cls + '">' + sign + '£' + Math.abs(netSaving).toFixed(2) + '</span>'
+    + '<span class="saving-amount ' + cls + '">' + sign + '£' + Math.abs(netSaving).toFixed(2) + ' if you detour</span>'
     + '<span class="saving-verdict ' + cls + '" id="sv-' + idx + '">' + verdict + ' ▾</span>'
     + '</div>'
     + '<div class="saving-detail" id="sd-' + idx + '">' + detail + '</div>';
 }
+
 function toggleDetail(idx) {
   const el = document.getElementById('sd-' + idx);
   if (!el) return;
   el.classList.toggle('open');
   const lbl = document.getElementById('sv-' + idx);
-  if (lbl) lbl.textContent = lbl.textContent.replace(' ▾','').replace(' ▴','') + (el.classList.contains('open') ? ' ▴' : ' ▾');
+  if (lbl) {
+    const base = lbl.textContent.replace(' ▾','').replace(' ▴','');
+    lbl.textContent = base + (el.classList.contains('open') ? ' ▴' : ' ▾');
+  }
 }
 
 // MAP PIN
-function mkIcon(price, active) {
-  const col = pCol(price), sz = active ? 40 : 32, fs = active ? 8.5 : 7.5;
-  const lbl = price ? price.toFixed(1) + 'p' : '?';
-  const border = active ? '#F2C94C' : col;
+function mkIcon(price, active, isNearest) {
+  const col    = pCol(price);
+  const sz     = active ? 40 : 32;
+  const fs     = active ? 8.5 : 7.5;
+  const lbl    = price ? price.toFixed(1) + 'p' : '?';
+  const border = active ? '#F2C94C' : isNearest ? '#F2C94C' : col;
+  const shadow = active ? '0 3px 8px rgba(242,201,76,.5)' : '0 1px 4px rgba(0,0,0,.22)';
   return L.divIcon({
     className: '',
-    html: '<div style="position:relative;width:' + sz + 'px;height:' + sz + 'px;filter:drop-shadow(' + (active ? '0 3px 8px rgba(242,201,76,.5)' : '0 1px 4px rgba(0,0,0,.22)') + ')">'
-      + '<div style="position:absolute;inset:0;background:' + col + ';border:2px solid ' + border + ';border-radius:50% 50% 50% 0;transform:rotate(-45deg)"></div>'
+    html: '<div style="position:relative;width:' + sz + 'px;height:' + sz + 'px;filter:drop-shadow(' + shadow + ')">'
+      + '<div style="position:absolute;inset:0;background:' + col + ';border:' + (isNearest ? '2.5px' : '2px') + ' solid ' + border + ';border-radius:50% 50% 50% 0;transform:rotate(-45deg)"></div>'
       + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:3px;color:#fff;font-family:Arial,sans-serif;font-weight:700;font-size:' + fs + 'px;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.4)">' + lbl + '</div>'
       + '</div>',
     iconSize: [sz, sz], iconAnchor: [sz/2, sz]
@@ -433,7 +528,7 @@ function shortBrand(s) {
 }
 
 // POPUP
-function buildPopup(s) {
+function buildPopup(s, isNearest) {
   const fuel   = document.getElementById('fuelSel').value;
   const LABELS = { E10:'Petrol', E5:'Super', B7:'Diesel', SDV:'SDV' };
   const rows   = [];
@@ -442,8 +537,6 @@ function buildPopup(s) {
     if (src[k] && +src[k] > 50 && +src[k] < 400) rows.push({ label, val:+src[k], key:k });
   }
   if (!rows.length && s.price && +s.price > 50) rows.push({ label: LABELS[fuel]||fuel, val:+s.price, key:fuel });
-  const stationId = s.id || s.slug || (s.brand + s.address);
-  const isStarred = getBaselineId() === stationId || getBaselineId() === s.id || getBaselineId() === s.slug;
   const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.brand||s.name||'') + ' ' + (s.address||''));
   const priceRows = rows.map(function(r) {
     return '<div style="display:flex;justify-content:space-between;gap:14px;padding:4px 0;border-bottom:1px solid #E4E7EB;font-size:.72rem">'
@@ -454,24 +547,22 @@ function buildPopup(s) {
   const updated = s.price_updated
     ? '<div style="font-size:.55rem;color:#CBD2D9;margin-top:7px;font-family:ui-monospace,monospace">Updated ' + new Date(s.price_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + '</div>'
     : '';
-  const starLabel = isStarred ? '⭐ Comparing from here' : '☆ Compare savings from here';
-  const starStyle = isStarred
-    ? 'margin-top:10px;width:100%;padding:7px;border-radius:3px;border:1.5px solid #F2C94C;background:#FEFAEC;color:#946C00;font-family:ui-monospace,monospace;font-size:.65rem;font-weight:700;cursor:pointer;text-align:center'
-    : 'margin-top:10px;width:100%;padding:7px;border-radius:3px;border:1.5px solid #E4E7EB;background:#F5F6F7;color:#7B8794;font-family:ui-monospace,monospace;font-size:.65rem;font-weight:600;cursor:pointer;text-align:center';
-  const starBtn = '<button style="' + starStyle + '" onclick="popupStar(\'' + stationId.replace(/'/g,"\\'") + '\',\'' + (s.brand||s.name||'').replace(/'/g,"\\'") + '\',this)">' + starLabel + '</button>';
+  const nearestBar = isNearest
+    ? '<div style="margin-top:9px;padding:5px 8px;background:#FEFAEC;border:1.5px solid #F2C94C;border-radius:3px;font-family:ui-monospace,monospace;font-size:.62rem;color:#946C00;font-weight:700">📍 Nearest to ' + (lastSearchLabel||'your postcode') + ' — detour savings on other stations are measured from here</div>'
+    : '';
   return '<div style="font-family:ui-monospace,monospace;padding:12px 14px;min-width:200px">'
     + '<div style="font-family:-apple-system,sans-serif;font-weight:800;font-size:.88rem;margin-bottom:1px;color:#1F2933">' + (s.brand||s.name||'Station') + '</div>'
     + '<a href="' + mapsUrl + '" target="_blank" style="font-size:.6rem;color:#7B8794;margin-bottom:8px;line-height:1.4;display:block;text-decoration:none" onmouseover="this.style.color=\'#946C00\'" onmouseout="this.style.color=\'#7B8794\'">📍 ' + (s.address||'') + ' ↗</a>'
     + (priceRows || '<div style="color:#CBD2D9;font-size:.68rem">No price data</div>')
     + updated
-    + starBtn
+    + nearestBar
     + '</div>';
 }
 
 // RENDER
 function renderResults() {
-  const fuel = document.getElementById('fuelSel').value;
-  const by   = document.getElementById('sortSel').value;
+  const fuel   = document.getElementById('fuelSel').value;
+  const by     = document.getElementById('sortSel').value;
   const prices = allStations.map(function(s) { return getPrice(s, fuel); }).filter(Boolean);
 
   sorted = allStations.slice().sort(function(a,b) {
@@ -480,16 +571,11 @@ function renderResults() {
       : (a.distance||999) - (b.distance||999);
   });
 
-  // Determine baseline
-  const savedId = getBaselineId();
-  let baselineStation = savedId
-    ? allStations.find(function(s) { return s.id===savedId || s.slug===savedId; })
-    : null;
-  if (!baselineStation) {
-    baselineStation = allStations.slice().sort(function(a,b) { return (a.distance||999)-(b.distance||999); })[0];
-  }
-  const baselinePrice = baselineStation ? getPrice(baselineStation, fuel) : null;
-  const baselineDist  = baselineStation ? parseFloat(baselineStation.distance)||0 : 0;
+  // Always nearest station as reference
+  const nearestStation = allStations.slice().sort(function(a,b) { return (a.distance||999)-(b.distance||999); })[0];
+  const nearestId      = nearestStation ? (nearestStation.id||nearestStation.slug||nearestStation.brand+nearestStation.address) : null;
+  const nearestPrice   = nearestStation ? getPrice(nearestStation, fuel) : null;
+  const nearestDist    = nearestStation ? parseFloat(nearestStation.distance)||0 : 0;
 
   // Clear markers
   markers.forEach(function(m) {
@@ -499,9 +585,9 @@ function renderResults() {
   });
   markers = [];
 
-  document.getElementById('pillCount').textContent = sorted.length + ' station' + (sorted.length!==1?'s':'');
+  document.getElementById('pillCount').textContent = sorted.length + ' station' + (sorted.length !== 1 ? 's' : '');
   document.getElementById('resultsPill').classList.add('show');
-  document.getElementById('drawerTitle').textContent = sorted.length + ' Station' + (sorted.length!==1?'s':'') + ' nearby';
+  document.getElementById('drawerTitle').textContent = sorted.length + ' Station' + (sorted.length !== 1 ? 's' : '') + ' nearby';
 
   const list = document.getElementById('drawerList');
   list.innerHTML = '';
@@ -511,29 +597,21 @@ function renderResults() {
     const cls        = pCls(price);
     const tag        = pTag(price, prices);
     const fuelPrices = getAllFuelPrices(s);
-    const stationId  = s.id || s.slug || (s.brand + s.address);
-    const isBaseline = baselineStation && (
-      s.id === baselineStation.id ||
-      s.slug === baselineStation.slug ||
-      (s.brand + s.address) === (baselineStation.brand + baselineStation.address)
-    );
-    const isStarred = getBaselineId() && (s.id === getBaselineId() || s.slug === getBaselineId());
-    const saving    = isBaseline ? null : calcSaving(s, baselinePrice, baselineDist);
-    const mapsUrl   = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.brand||s.name||'') + ' ' + (s.address||''));
-    const chips     = fuelPrices.map(function(f) { return '<span class="c-chip">' + f.label + '</span>'; }).join('');
-    const others    = fuelPrices.filter(function(f) { return f.key !== fuel; })
+    const sid        = s.id || s.slug || (s.brand + s.address);
+    const isNearest  = sid === nearestId;
+    const saving     = isNearest ? null : calcSaving(s, nearestPrice, nearestDist);
+    const mapsUrl    = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.brand||s.name||'') + ' ' + (s.address||''));
+    const chips      = fuelPrices.map(function(f) { return '<span class="c-chip">' + f.label + '</span>'; }).join('');
+    const others     = fuelPrices.filter(function(f) { return f.key !== fuel; })
       .map(function(f) { return '<div class="orow"><span>' + f.label + '</span><span class="oval">' + f.val.toFixed(1) + 'p</span></div>'; }).join('');
 
     const card = document.createElement('div');
-    card.className = 'card' + (isBaseline ? ' is-baseline' : '');
+    card.className = 'card';
     card.dataset.i = i;
     card.innerHTML =
       '<div>'
-      + '<div class="c-rank">#' + (i+1) + (isBaseline ? '  <span class="c-baseline-badge">Reference</span>' : '') + '</div>'
-      + '<div class="c-brand">'
-        + (s.brand||s.name||'Station')
-        + '<button class="c-star' + (isStarred?' starred':'') + '" onclick="event.stopPropagation();starStation(\'' + stationId.replace(/'/g,"\\'") + '\',\'' + (s.brand||s.name||'').replace(/'/g,"\\'") + '\',this)" title="Set as reference station">' + (isStarred?'⭐':'☆') + '</button>'
-      + '</div>'
+      + '<div class="c-rank">#' + (i+1) + (isNearest ? '<span class="c-nearest-badge">Nearest</span>' : '') + '</div>'
+      + '<div class="c-brand">' + (s.brand||s.name||'Station') + '</div>'
       + '<a class="c-addr" href="' + mapsUrl + '" target="_blank" onclick="event.stopPropagation()">📍 ' + (s.address||'') + ' ↗</a>'
       + '<div class="c-meta">'
         + (s.distance != null ? '<span class="c-dist">' + (+s.distance).toFixed(1) + ' mi</span>' : '')
@@ -547,14 +625,14 @@ function renderResults() {
             + (tag ? '<span class="ptag ' + tag[0] + '">' + tag[1] + '</span>' : '')
           : '<div style="color:var(--navy-60);font-size:.7rem;margin-top:4px">—</div>')
         + '<div class="others">' + others + '</div>'
-        + savingBlock(saving, isBaseline, i)
+        + savingBlock(saving, isNearest, i)
       + '</div>';
 
     card.addEventListener('click', function() { selectStation(i); });
     list.appendChild(card);
 
     if (s.lat && s.lng) {
-      const mk = L.marker([+s.lat, +s.lng], { icon: mkIcon(price, false) });
+      const mk    = L.marker([+s.lat, +s.lng], { icon: mkIcon(price, false, isNearest) });
       const brand = shortBrand(s);
       if (brand) {
         const lbl = L.divIcon({
@@ -566,7 +644,7 @@ function renderResults() {
         lm.addTo(map);
         mk._labelMarker = lm;
       }
-      mk.bindPopup(buildPopup(s), { maxWidth:250 });
+      mk.bindPopup(buildPopup(s, isNearest), { maxWidth:250 });
       mk.on('click', function() { selectStation(i); });
       mk.addTo(map);
       markers.push(mk);
@@ -578,42 +656,11 @@ function renderResults() {
   openDrawer();
 }
 
-function popupStar(id, name, btn) {
-  if (getBaselineId() === id) {
-    clearBaseline();
-    btn.textContent = '☆ Compare savings from here';
-    btn.style.background = '#F5F6F7';
-    btn.style.color = '#7B8794';
-    btn.style.borderColor = '#E4E7EB';
-  } else {
-    setBaseline(id, name);
-    btn.textContent = '⭐ Comparing from here';
-    btn.style.background = '#FEFAEC';
-    btn.style.color = '#946C00';
-    btn.style.borderColor = '#F2C94C';
-    // Update card stars too
-    document.querySelectorAll('.c-star').forEach(function(b) { b.textContent='☆'; b.classList.remove('starred'); });
-  }
-}
-
-function starStation(id, name, btn) {
-  if (getBaselineId() === id) {
-    clearBaseline();
-    btn.textContent = '☆';
-    btn.classList.remove('starred');
-  } else {
-    setBaseline(id, name);
-    document.querySelectorAll('.c-star').forEach(function(b) { b.textContent='☆'; b.classList.remove('starred'); });
-    btn.textContent = '⭐';
-    btn.classList.add('starred');
-  }
-}
-
 function selectStation(i) {
   document.querySelectorAll('.card').forEach(function(c,idx) { c.classList.toggle('on', idx===i); });
   const fuel = document.getElementById('fuelSel').value;
   markers.forEach(function(m, idx) {
-    if (m) m.setIcon(mkIcon(getPrice(sorted[idx], fuel), idx===i));
+    if (m) m.setIcon(mkIcon(getPrice(sorted[idx], fuel), idx===i, false));
   });
   const mk = markers[i];
   if (mk) { map.panTo(mk.getLatLng(), {animate:true}); setTimeout(function(){mk.openPopup();}, 300); }
@@ -665,8 +712,11 @@ async function doSearch(oLat, oLng) {
   try {
     var lat = oLat, lng = oLng;
     if (lat == null) {
-      var loc = await resolvePostcode(document.getElementById('pcInput').value);
+      lastSearchLabel = document.getElementById('pcInput').value.trim().toUpperCase();
+      var loc = await resolvePostcode(lastSearchLabel);
       lat = loc.lat; lng = loc.lng;
+    } else {
+      lastSearchLabel = 'your location';
     }
     var fuel   = document.getElementById('fuelSel').value;
     var radius = document.getElementById('radSel').value;
@@ -678,9 +728,9 @@ async function doSearch(oLat, oLng) {
     if (!list.length) throw new Error('No stations found within ' + radius + ' miles. Try a wider radius.');
     allStations = list;
     circle = L.circle([lat, lng], { radius: +radius*1609.34, color:'#F2C94C', weight:1.5, opacity:.4, fillColor:'#F2C94C', fillOpacity:.04 }).addTo(map);
-    var zoom = +radius<=3?13:+radius<=5?12:+radius<=10?11:10;
-    map.setView([lat, lng], zoom, {animate:true});
-    renderResults(); closePanel();
+    map.setView([lat, lng], +radius<=3?13:+radius<=5?12:+radius<=10?11:10, {animate:true});
+    renderResults();
+    closePanel();
   } catch(e) {
     showErr(e.message || 'Something went wrong.');
   }
@@ -710,7 +760,7 @@ function closePanel() {
   document.getElementById('fab').querySelector('span').textContent = '⛽';
   panelOpen = false;
 }
-function openDrawer()  { document.getElementById('drawer').classList.add('open');    drawerOpen = true;  }
+function openDrawer()  { document.getElementById('drawer').classList.add('open');    drawerOpen = true; }
 function closeDrawer() { document.getElementById('drawer').classList.remove('open'); drawerOpen = false; }
 function showLoading(on) {
   document.getElementById('loadingOverlay').classList.toggle('show', on);
@@ -722,9 +772,9 @@ function showErr(m) {
   e.textContent = '⚠ ' + m; e.style.display = 'block';
   if (!panelOpen) openPanel();
 }
-function hideErr()    { document.getElementById('errMsg').style.display = 'none'; }
-function onPcInput(el){ document.getElementById('pcClear').classList.toggle('show', el.value.length > 0); }
-function clearPc()    { document.getElementById('pcInput').value = ''; document.getElementById('pcClear').classList.remove('show'); document.getElementById('pcInput').focus(); }
+function hideErr()     { document.getElementById('errMsg').style.display = 'none'; }
+function onPcInput(el) { document.getElementById('pcClear').classList.toggle('show', el.value.length > 0); }
+function clearPc()     { document.getElementById('pcInput').value = ''; document.getElementById('pcClear').classList.remove('show'); document.getElementById('pcInput').focus(); }
 
 document.getElementById('pcInput').addEventListener('keydown', function(e) { if (e.key==='Enter') { e.preventDefault(); doSearch(); } });
 map.on('click', function() { if (panelOpen) closePanel(); });
