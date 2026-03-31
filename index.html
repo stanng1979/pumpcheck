@@ -39,9 +39,7 @@ body{font-family:var(--mono);background:var(--navy-10);color:var(--navy);font-si
 .fab.open .fab-dot{display:none}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-/* SETTINGS FAB */
-.fab-settings{position:fixed;bottom:88px;right:20px;z-index:1000;width:40px;height:40px;border-radius:50%;background:var(--white);border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 2px 8px rgba(31,41,51,.15);transition:transform .15s,border-color .15s}
-.fab-settings:hover{transform:scale(1.07);border-color:var(--amber)}
+/* (settings merged into panel) */
 
 /* PANEL */
 .panel{position:fixed;bottom:90px;right:16px;z-index:999;width:min(360px,calc(100vw - 32px));background:var(--white);border:2px solid var(--border);border-top:3px solid var(--amber);border-radius:3px;box-shadow:0 8px 28px rgba(31,41,51,.18);overflow:hidden;transform:scale(.87) translateY(14px);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.34,1.4,.64,1),opacity .18s;transform-origin:bottom right}
@@ -70,13 +68,12 @@ select.ctl:focus{border-color:var(--amber)}
 .results-pill.show{display:flex}
 .pill-count{font-family:var(--mono);font-weight:700;font-size:.65rem;color:var(--amber-text);text-transform:uppercase;letter-spacing:.08em}
 
-/* SETTINGS PANEL */
-.settings-panel{position:fixed;bottom:90px;right:16px;z-index:998;width:min(320px,calc(100vw - 32px));background:var(--white);border:2px solid var(--border);border-top:3px solid var(--amber);border-radius:3px;box-shadow:0 8px 28px rgba(31,41,51,.18);overflow:hidden;transform:scale(.87) translateY(14px);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.34,1.4,.64,1),opacity .18s;transform-origin:bottom right}
-.settings-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
-.settings-head{background:var(--navy);border-bottom:3px solid var(--amber);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
-.settings-title{font-family:var(--sans);font-weight:800;font-size:.82rem;color:var(--white);letter-spacing:1.5px;text-transform:uppercase}
-.settings-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:1rem;cursor:pointer;padding:2px 6px}
-.settings-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+/* TABS */
+.tab-bar{display:flex;border-bottom:1.5px solid var(--border);background:var(--navy-10);flex-shrink:0}
+.tab{flex:1;background:none;border:none;padding:9px 12px;font-family:var(--mono);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy-60);cursor:pointer;border-bottom:3px solid transparent;transition:color .15s,border-color .15s;margin-bottom:-1.5px}
+.tab:hover{color:var(--navy)}
+.tab.active{color:var(--amber-text);border-bottom-color:var(--amber);background:var(--white)}
+.tab-content{overflow-y:auto;max-height:60vh}
 .setting-row{display:flex;flex-direction:column;gap:5px}
 .setting-label{font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--amber-text)}
 .setting-desc{font-size:.62rem;color:var(--navy-60);line-height:1.4}
@@ -173,88 +170,103 @@ select.pill-sort:focus{border-color:var(--amber)}
   <div class="loading-label">Finding stations…</div>
 </div>
 
-<!-- Settings FAB -->
-<button class="fab-settings" onclick="toggleSettings()" title="Settings">⚙️</button>
-
-<!-- Main FAB -->
+<!-- Single FAB -->
 <button class="fab" id="fab" onclick="togglePanel()" title="Expensive Petroleum 🪄">
   <span>⛽</span>
   <div class="fab-dot"></div>
 </button>
 
-<!-- Search panel -->
+<!-- Unified panel with tabs -->
 <div class="panel" id="panel">
   <div class="panel-head">
     <div class="panel-logo"><div class="panel-logo-dot"></div>🪄 Expensive Petroleum</div>
     <div class="live-pill">"Expensive Petroleum"<br>— Ron Weasley</div>
   </div>
-  <div class="panel-body">
-    <div class="pc-row">
-      <div class="pc-wrap">
-        <input class="pc-input" id="pcInput"
-          placeholder="Enter postcode e.g. SW1A 2AA"
-          maxlength="10" autocorrect="off" autocapitalize="characters"
-          spellcheck="false" autocomplete="postal-code"
-          oninput="onPcInput(this)"/>
-        <button class="pc-clear" id="pcClear" onclick="clearPc()">✕</button>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab active" id="tab-search" onclick="switchTab('search')">⛽ Search</button>
+    <button class="tab" id="tab-settings" onclick="switchTab('settings')">⚙️ Settings</button>
+  </div>
+
+  <!-- Search tab -->
+  <div class="tab-content" id="tabSearch">
+    <div class="panel-body">
+      <div class="pc-row">
+        <div class="pc-wrap">
+          <input class="pc-input" id="pcInput"
+            placeholder="Enter postcode e.g. SW1A 2AA"
+            maxlength="10" autocorrect="off" autocapitalize="characters"
+            spellcheck="false" autocomplete="postal-code"
+            oninput="onPcInput(this)"/>
+          <button class="pc-clear" id="pcClear" onclick="clearPc()">✕</button>
+        </div>
+        <button class="gps-btn" onclick="useGPS()" title="Use my current location">📍</button>
       </div>
-      <button class="gps-btn" onclick="useGPS()" title="Use my location">📍</button>
-    </div>
-    <div class="ctrl-row">
-      <select class="ctl" id="fuelSel">
-        <option value="E10">Petrol (E10)</option>
-        <option value="E5">Super (E5)</option>
-        <option value="B7">Diesel (B7)</option>
-        <option value="SDV">Super Diesel</option>
-      </select>
-      <select class="ctl" id="radSel">
-        <option value="3">3 mi</option>
-        <option value="5" selected>5 mi</option>
-        <option value="10">10 mi</option>
-        <option value="20">20 mi</option>
-      </select>
-      <button class="search-btn" id="btnSearch" onclick="doSearch()">Search</button>
-    </div>
-    <div class="err-msg" id="errMsg"></div>
-    <div class="results-pill" id="resultsPill">
-      <span class="pill-count" id="pillCount"></span>
+      <div class="ctrl-row">
+        <select class="ctl" id="fuelSel">
+          <option value="E10">Petrol (E10)</option>
+          <option value="E5">Super (E5)</option>
+          <option value="B7">Diesel (B7)</option>
+          <option value="SDV">Super Diesel</option>
+        </select>
+        <select class="ctl" id="radSel">
+          <option value="3">3 mi</option>
+          <option value="5" selected>5 mi</option>
+          <option value="10">10 mi</option>
+          <option value="20">20 mi</option>
+        </select>
+        <button class="search-btn" id="btnSearch" onclick="doSearch()">Search</button>
+      </div>
+      <div class="err-msg" id="errMsg"></div>
+      <div class="results-pill" id="resultsPill">
+        <span class="pill-count" id="pillCount"></span>
+      </div>
     </div>
   </div>
-</div>
 
-<!-- Settings panel -->
-<div class="settings-panel" id="settingsPanel">
-  <div class="settings-head">
-    <div class="settings-title">⚙️ Settings</div>
-    <button class="settings-close" onclick="toggleSettings()">✕</button>
-  </div>
-  <div class="settings-body">
+  <!-- Settings tab -->
+  <div class="tab-content" id="tabSettings" style="display:none">
+    <div class="panel-body">
 
-    <div class="setting-row">
-      <div class="setting-label">Tank size</div>
-      <div class="setting-desc">How many litres you typically fill up</div>
-      <div class="setting-input-row">
-        <input class="setting-input" id="litresSetting" type="number" min="10" max="120" value="40"/>
-        <span class="setting-unit">litres</span>
+      <div class="setting-row">
+        <div class="setting-label">⛽ Tank size</div>
+        <div class="setting-desc">How many litres you usually fill up in one visit. Used to calculate how much you save on fuel at a cheaper station. Most family cars are 50–70L, smaller cars 35–45L.</div>
+        <div class="setting-input-row">
+          <input class="setting-input" id="litresSetting" type="number" min="10" max="120" value="40"/>
+          <span class="setting-unit">litres</span>
+        </div>
       </div>
-    </div>
 
-    <div class="setting-row">
-      <div class="setting-label">Fuel efficiency</div>
-      <div class="setting-desc">Your car's average fuel economy</div>
-      <div class="setting-input-row">
-        <input class="setting-input" id="mpgSetting" type="number" min="10" max="200" value="40"/>
-        <span class="setting-unit">MPG</span>
+      <div class="setting-row">
+        <div class="setting-label">🚗 Fuel economy (MPG)</div>
+        <div class="setting-desc">Your car's miles per gallon. Used to work out the fuel cost of driving further to a cheaper station. Most petrol cars are 30–45 MPG. Check your car's spec or use your trip computer average.</div>
+        <div class="setting-input-row">
+          <input class="setting-input" id="mpgSetting" type="number" min="10" max="200" value="40"/>
+          <span class="setting-unit">MPG</span>
+        </div>
       </div>
-    </div>
 
-    <div class="setting-row" id="baselineInfoRow" style="display:none">
-      <div class="setting-label">⭐ Your reference station</div>
-      <div class="baseline-info" id="baselineInfo"></div>
-      <button class="baseline-clear" onclick="clearBaseline()">Remove reference station</button>
-    </div>
+      <div class="setting-row">
+        <div class="setting-label">⭐ Reference station</div>
+        <div class="setting-desc">The station everything is compared against. By default this is your nearest station. Tap ☆ on any station in the results to set it as your personal reference — useful if you have a regular station you always use. Savings show how much better or worse each alternative is vs this reference.</div>
+        <div class="baseline-info" id="baselineInfo" style="display:none"></div>
+        <button class="baseline-clear" id="baselineClearBtn" onclick="clearBaseline()" style="display:none">Remove reference station</button>
+      </div>
 
-    <button class="setting-save" onclick="saveSettings()">Save settings</button>
+      <div class="setting-row">
+        <div class="setting-label">📍 How savings are calculated</div>
+        <div class="setting-desc">
+          Net saving = (price difference × litres) − cost of extra driving<br><br>
+          Example: reference at 149p, target at 146p, 40L tank, 40 MPG, 2 extra miles round trip:<br>
+          Fuel saving = 3p × 40 ÷ 100 = <strong>£1.20</strong><br>
+          Drive cost = 2mi ÷ 40MPG × 4.55L/gal × 146p ÷ 100 = <strong>£0.33</strong><br>
+          Net = £1.20 − £0.33 = <strong>£0.87 → Worth it ✓</strong>
+        </div>
+      </div>
+
+      <button class="setting-save" onclick="saveSettings()">Save settings</button>
+    </div>
   </div>
 </div>
 
@@ -284,7 +296,7 @@ L.control.zoom({position:'topright'}).addTo(map);
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
 let allStations=[], sorted=[], markers=[], circle=null;
-let panelOpen=false, drawerOpen=false, settingsOpen=false;
+let panelOpen=false, drawerOpen=false;
 
 // ── SETTINGS (localStorage) ───────────────────────────────────────────────────
 function getSettings() {
@@ -320,15 +332,26 @@ function clearBaseline() {
   updateBaselineInfo();
   renderResults();
 }
+function switchTab(tab) {
+  document.getElementById('tabSearch').style.display   = tab==='search'   ? 'block' : 'none';
+  document.getElementById('tabSettings').style.display = tab==='settings' ? 'block' : 'none';
+  document.getElementById('tab-search').classList.toggle('active',   tab==='search');
+  document.getElementById('tab-settings').classList.toggle('active', tab==='settings');
+  if (tab==='settings') initSettingsPanel();
+}
+
 function updateBaselineInfo() {
-  const id = getBaselineId();
-  const row = document.getElementById('baselineInfoRow');
+  const id   = getBaselineId();
   const info = document.getElementById('baselineInfo');
+  const btn  = document.getElementById('baselineClearBtn');
+  if (!info || !btn) return;
   if (id) {
-    row.style.display = 'block';
     info.textContent = `⭐ ${getBaselineName()} — savings calculated against this station`;
+    info.style.display = 'block';
+    btn.style.display  = 'block';
   } else {
-    row.style.display = 'none';
+    info.style.display = 'none';
+    btn.style.display  = 'none';
   }
 }
 
@@ -687,7 +710,6 @@ function useGPS() {
 // ── UI ────────────────────────────────────────────────────────────────────────
 function togglePanel(){panelOpen?closePanel():openPanel();}
 function openPanel(){
-  closeSettings();
   document.getElementById('panel').classList.add('open');
   document.getElementById('fab').classList.add('open');
   document.getElementById('fab').querySelector('span').textContent='✕';
@@ -702,18 +724,7 @@ function closePanel(){
 function openDrawer(){document.getElementById('drawer').classList.add('open');drawerOpen=true;}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');drawerOpen=false;}
 function toggleDrawer(){drawerOpen?closeDrawer():openDrawer();}
-function toggleSettings(){settingsOpen?closeSettings():openSettings();}
-function openSettings(){
-  closePanel();
-  initSettingsPanel();
-  document.getElementById('settingsPanel').classList.add('open');
-  settingsOpen=true;
-}
-function closeSettings(){
-  document.getElementById('settingsPanel').classList.remove('open');
-  settingsOpen=false;
-}
-function showLoading(on){
+
   document.getElementById('loadingOverlay').classList.toggle('show',on);
   document.getElementById('btnSearch').disabled=on;
   document.getElementById('btnSearch').textContent=on?'…':'Search';
@@ -734,7 +745,7 @@ function toggleSavingDetail(idx) {
 }
 
 document.getElementById('pcInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}});
-map.on('click',()=>{if(panelOpen)closePanel();if(settingsOpen)closeSettings();});
+map.on('click',()=>{if(panelOpen)closePanel();});
 window.addEventListener('load',()=>setTimeout(openPanel,400));
 </script>
 </body>
