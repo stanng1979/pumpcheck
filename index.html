@@ -117,21 +117,21 @@ select.pill-sort:focus{border-color:var(--amber)}
 .oval{font-weight:600;color:var(--navy)}
 
 /* SAVING BADGE */
-.saving-block{margin-top:5px;padding:4px 7px;border-radius:3px;border:1.5px solid;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer;transition:opacity .15s}
+.saving-block{margin-top:5px;padding:5px 8px;border-radius:3px;border:1.5px solid;display:flex;flex-direction:column;gap:2px;cursor:pointer;transition:opacity .15s}
 .saving-block:hover{opacity:.85}
 .saving-block.worth-it{background:#dcfce7;border-color:#86efac}
 .saving-block.small-saving{background:#fef9c3;border-color:#fde047}
 .saving-block.not-worth{background:#fee2e2;border-color:#fca5a5}
 .saving-block.is-nearest{background:var(--amber-bg);border-color:var(--amber-border);cursor:default}
 .saving-block.is-nearest:hover{opacity:1}
-.saving-amount{font-family:var(--mono);font-weight:700;font-size:.72rem;flex-shrink:0}
+.saving-amount{font-family:var(--mono);font-weight:700;font-size:.7rem}
 .saving-amount.worth-it{color:#15803d}.saving-amount.small-saving{color:#a16207}
 .saving-amount.not-worth{color:#dc2626}.saving-amount.is-nearest{color:var(--amber-text)}
-.saving-verdict{font-family:var(--mono);font-size:.62rem;color:var(--navy-60);flex:1;text-align:right}
-.saving-verdict.worth-it{color:#15803d;font-weight:600}
-.saving-verdict.small-saving{color:#a16207;font-weight:600}
-.saving-verdict.not-worth{color:#dc2626;font-weight:600}
-.saving-verdict.is-nearest{color:var(--amber-text);font-size:.6rem}
+.saving-verdict{font-family:var(--mono);font-size:.7rem;font-weight:600}
+.saving-verdict.worth-it{color:#15803d}
+.saving-verdict.small-saving{color:#a16207}
+.saving-verdict.not-worth{color:#dc2626}
+.saving-verdict.is-nearest{color:var(--amber-text)}
 .saving-detail{font-family:var(--mono);font-size:.58rem;color:var(--navy-60);margin-top:4px;padding:6px 8px;line-height:1.7;border-top:1px solid var(--border);display:none;background:var(--navy-10);border-radius:0 0 3px 3px}
 .saving-detail.open{display:block}
 
@@ -164,7 +164,7 @@ select.pill-sort:focus{border-color:var(--amber)}
 
 <div class="panel" id="panel">
   <div class="panel-head">
-    <div class="panel-logo"><div class="panel-logo-dot"></div>🪄 Expensive Petroleum</div>
+    <div class="panel-logo"><div class="panel-logo-dot"></div><span>🪄 Expensive<br>Petroleum</span></div>
     <div class="live-pill">"Expensive Petroleum"<br>— Ron Weasley</div>
   </div>
   <div class="tab-bar">
@@ -469,7 +469,7 @@ function savingBlock(saving, isNearest, idx) {
   if (isNearest) {
     return '<div class="saving-block is-nearest">'
       + '<span class="saving-amount is-nearest">📍 Nearest to ' + (lastSearchLabel || 'your postcode') + '</span>'
-      + '<span class="saving-verdict is-nearest">No detour needed — detours measured from here</span>'
+      + '<span class="saving-verdict is-nearest">Detour savings on other stations measured from here</span>'
       + '</div>';
   }
   if (!saving) return '';
@@ -488,8 +488,8 @@ function savingBlock(saving, isNearest, idx) {
     + 'Estimated net: ' + sign + '£' + Math.abs(netSaving).toFixed(2) + '<br>'
     + '<span style="color:#CBD2D9;font-size:.9em">Distance measured from your postcode — actual saving depends on your route</span>';
   return '<div class="saving-block ' + cls + '" onclick="event.stopPropagation();toggleDetail(' + idx + ')">'
-    + '<span class="saving-amount ' + cls + '">' + sign + '£' + Math.abs(netSaving).toFixed(2) + ' if you detour</span>'
-    + '<span class="saving-verdict ' + cls + '" id="sv-' + idx + '">' + verdict + ' ▾</span>'
+    + '<span class="saving-amount ' + cls + '">' + sign + '£' + Math.abs(netSaving).toFixed(2) + ' if you detour here</span>'
+    + '<span class="saving-verdict ' + cls + '" id="sv-' + idx + '">' + verdict + ' · tap for detail ▾</span>'
     + '</div>'
     + '<div class="saving-detail" id="sd-' + idx + '">' + detail + '</div>';
 }
