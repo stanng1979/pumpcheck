@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>PumpCheck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --ink: #0d0d0d;
+  --bg: #f5f2ec;
+  --accent: #e8421a;
+  --border: #e0dbd2;
+  --muted: #777;
+  --cheap: #16a34a;
+  --mid: #b45309;
+  --pricey: #dc2626;
+  --card: #ffffffee;
+  --shadow: 0 8px 32px rgba(0,0,0,.18);
+  --r: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; width: 100%; overflow: hidden; }
+body { font-family: 'DM Mono', 'Courier New', monospace; background: #e8e4dc; }
+
+/* ── FULL SCREEN MAP ── */
+#map { position: fixed; inset: 0; z-index: 0; }
+
+/* ── FLOATING FAB ── */
+.fab {
+  position: fixed;
+  bottom: 28px;
+  right: 20px;
+  z-index: 1000;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,.35);
+  transition: transform .2s, background .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.fab:hover { transform: scale(1.08); }
+.fab:active { transform: scale(.95); }
+.fab.open { background: var(--accent); }
+.fab-dot {
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  animation: blink 2s ease-in-out infinite;
+}
+.fab.open .fab-dot { display: none; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+/* ── SEARCH PANEL (bottom sheet) ── */
+.panel {
+  position: fixed;
+  bottom: 100px;
+  right: 16px;
+  z-index: 999;
+  width: min(380px, calc(100vw - 32px));
+  background: var(--card);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+  transform: scale(.85) translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), opacity .2s ease;
+  transform-origin: bottom right;
+}
+.panel.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.panel-head {
+  background: var(--ink);
+  padding: 14px 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.panel-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: white;
+  letter-spacing: -.4px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.panel-logo span { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; display: inline-block; }
+.live-pill {
+  font-size: .55rem;
+  background: var(--accent);
+  color: white;
+  padding: 2px 7px;
+  border-radius: 20px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.panel-body { padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+
+/* Postcode row */
+.pc-row {
+  display: flex;
+  gap: 7px;
+  align-items: stretch;
+}
+.pc-wrap { position: relative; flex: 1; }
+.pc-input {
+  width: 100%;
+  background: #f5f2ec;
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  letter-spacing: .06em;
+  padding: 12px 36px 12px 13px;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color .2s;
+  text-transform: uppercase;
+}
+.pc-input::placeholder {
+  text-transform: none;
+  font-family: 'DM Mono', monospace;
+  font-weight: 400;
+  font-size: .75rem;
+  letter-spacing: 0;
+  color: var(--muted);
+}
+.pc-input:focus { border-color: var(--accent); }
+.pc-clear {
+  position: absolute;
+  right: 9px; top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: .9rem;
+  cursor: pointer;
+  padding: 2px;
+  display: none;
+  line-height: 1;
+}
+.pc-clear.show { display: block; }
+.gps-btn {
+  background: var(--ink);
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  padding: 0 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.gps-btn:hover { background: #333; }
+.gps-btn:active { background: var(--accent); }
+
+/* Controls row */
+.ctrl-row {
+  display: flex;
+  gap: 7px;
+  align-items: stretch;
+}
+select.ctl {
+  flex: 1;
+  background: #f5f2ec;
+  border: 1.5px solid var(--border);
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  font-size: .75rem;
+  padding: 10px 8px;
+  border-radius: 10px;
+  outline: none;
+  cursor: pointer;
+  min-width: 0;
+}
+.search-btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .8rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: opacity .15s, transform .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.search-btn:hover { opacity: .88; transform: translateY(-1px); }
+.search-btn:active { transform: translateY(0); }
+.search-btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+
+/* Error */
+.err-msg {
+  background: #fee2e2;
+  color: var(--pricey);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: .72rem;
+  line-height: 1.5;
+  display: none;
+}
+
+/* Results pill */
+.results-pill {
+  background: #f0ede8;
+  border-radius: 8px;
+  padding: 4px 4px 4px 10px;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.results-pill.show { display: flex; }
+.pill-count {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+select.pill-sort {
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--ink);
+  font-family: 'DM Mono', monospace;
+  font-size: .68rem;
+  padding: 5px 8px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ── RESULTS DRAWER (slides up from bottom) ── */
+.drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 998;
+  background: white;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -4px 30px rgba(0,0,0,.15);
+  transform: translateY(100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  max-height: 55vh;
+  display: flex;
+  flex-direction: column;
+}
+.drawer.open { transform: translateY(0); }
+.drawer-handle {
+  width: 36px; height: 4px;
+  background: #ddd;
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.drawer-header {
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.drawer-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+}
+.drawer-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.drawer-close:hover { background: #f0f0f0; }
+.drawer-list { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+
+/* ── STATION CARD ── */
+.card {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .1s;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  align-items: start;
+}
+.card:hover, .card:active { background: rgba(0,0,0,.025); }
+.card.on {
+  background: rgba(232,66,26,.04);
+  border-left: 3px solid var(--accent);
+  padding-left: 13px;
+}
+.c-rank { font-size: .58rem; color: var(--muted); margin-bottom: 2px; letter-spacing: .04em; }
+.c-brand { font-family: 'Syne', sans-serif; font-weight: 700; font-size: .88rem; margin-bottom: 2px; }
+.c-addr { font-size: .66rem; color: var(--muted); line-height: 1.4; margin-bottom: 4px; }
+.c-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.c-dist { font-size: .6rem; background: var(--border); padding: 2px 6px; border-radius: 3px; }
+.c-chip { font-size: .58rem; padding: 2px 5px; border-radius: 3px; border: 1px solid var(--border); color: var(--muted); }
+.pcol { text-align: right; }
+.mprice { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; line-height: 1; }
+.cheap  { color: var(--cheap); }
+.mid    { color: var(--mid); }
+.pricey { color: var(--pricey); }
+.punit  { font-size: .58rem; color: var(--muted); display: block; margin: 2px 0 3px; }
+.ptag   { font-size: .56rem; font-weight: 500; padding: 2px 5px; border-radius: 3px; text-transform: uppercase; letter-spacing: .05em; display: inline-block; }
+.tag-cheap  { background: #dcfce7; color: var(--cheap); }
+.tag-mid    { background: #fde68a; color: #92400e; }
+.tag-pricey { background: #fee2e2; color: var(--pricey); }
+.others { margin-top: 3px; }
+.orow   { display: flex; justify-content: space-between; font-size: .58rem; color: var(--muted); gap: 5px; margin-top: 1px; }
+.oval   { font-weight: 500; color: var(--ink); }
+
+/* ── LOADING OVERLAY ── */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(13,13,13,.55);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 14px;
+}
+.loading-overlay.show { display: flex; }
+.spin-ring {
+  width: 44px; height: 44px;
+  border: 3px solid rgba(255,255,255,.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-label {
+  color: white;
+  font-size: .8rem;
+  letter-spacing: .04em;
+}
+
+/* ── LEAFLET POPUP ── */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  font-family: 'DM Mono', monospace !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15) !important;
+  padding: 0 !important;
+}
+.leaflet-popup-content { margin: 0 !important; }
+.leaflet-popup-close-button { top: 8px !important; right: 10px !important; }
+
+/* ── ATTRIBUTION ── */
+.attr-bar {
+  position: fixed;
+  bottom: 4px;
+  left: 8px;
+  z-index: 500;
+  font-size: .55rem;
+  color: var(--muted);
+  background: rgba(245,242,236,.85);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.attr-bar a { color: var(--accent); text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- Full screen map -->
+<div id="map"></div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spin-ring"></div>
+  <div class="loading-label">Finding stations…</div>
+</div>
+
+<!-- Floating action button -->
+<button class="fab" id="fab" onclick="togglePanel()" title="Search for fuel prices">
+  <span>⛽</span>
+  <div class="fab-dot"></div>
+</button>
+
+<!-- Search panel -->
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <div class="panel-logo"><span></span>PumpCheck</div>
+    <div class="live-pill">Live prices</div>
+  </div>
+  <div class="panel-body">
+
+    <!-- Postcode + GPS -->
+    <div class="pc-row">
+      <div class="pc-wrap">
+        <input class="pc-input" id="pcInput"
+          placeholder="Postcode e.g. SW1A 2AA or SW1"
+          maxlength="10"
+          autocorrect="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          autocomplete="postal-code"
+          oninput="onPcInput(this)"
+        />
+        <button class="pc-clear" id="pcClear" onclick="clearPc()">✕</button>
+      </div>
+      <button class="gps-btn" onclick="useGPS()" title="Use my location">📍</button>
+    </div>
+
+    <!-- Fuel + Radius + Search -->
+    <div class="ctrl-row">
+      <select class="ctl" id="fuelSel">
+        <option value="E10">⛽ Petrol</option>
+        <option value="E5">🔋 Super</option>
+        <option value="B7">🚛 Diesel</option>
+        <option value="SDV">💎 Super Diesel</option>
+      </select>
+      <select class="ctl" id="radSel">
+        <option value="3">3 mi</option>
+        <option value="5" selected>5 mi</option>
+        <option value="10">10 mi</option>
+        <option value="20">20 mi</option>
+      </select>
+      <button class="search-btn" id="btnSearch" onclick="doSearch()">Search</button>
+    </div>
+
+    <!-- Error -->
+    <div class="err-msg" id="errMsg"></div>
+
+    <!-- Results count (shown after search) -->
+    <div class="results-pill" id="resultsPill">
+      <span class="pill-count" id="pillCount"></span>
+    </div>
+
+  </div>
+</div>
+
+<!-- Results drawer -->
+<div class="drawer" id="drawer">
+  <div class="drawer-handle" onclick="toggleDrawer()"></div>
+  <div class="drawer-header">
+    <span class="drawer-title" id="drawerTitle">Stations</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <select class="pill-sort" id="sortSel" onchange="renderResults()">
+        <option value="price">Cheapest first</option>
+        <option value="dist">Nearest first</option>
+      </select>
+      <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+  </div>
+  <div class="drawer-list" id="drawerList"></div>
+</div>
+
+<!-- Attribution -->
+
+
+<script>
+// ── MAP ──────────────────────────────────────────────────────────────────────
+const map = L.map('map', { zoomControl: false }).setView([52.04, -0.76], 11);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+// Move zoom to top-right
+L.control.zoom({ position: 'topright' }).addTo(map);
+
+let allStations = [], sorted = [], markers = [], circle = null;
+let panelOpen = false, drawerOpen = false;
+
+// ── PRICE HELPERS ─────────────────────────────────────────────────────────────
+// API returns: { id, brand, address, postcode, slug, price (selected fuel),
+//               distance, lat, lng, price_updated, diff_from_avg,
+//               prices: { E10, E5, B7, SDV } }
+function getPrice(s, fuel) {
+  fuel = fuel || document.getElementById('fuelSel').value;
+  // Direct price field (selected fuel from API)
+  if (s.price && +s.price > 50) return +s.price;
+  // prices sub-object
+  if (s.prices) {
+    const p = s.prices;
+    const keys = { E10:['E10','e10','petrol'], E5:['E5','e5','super'], B7:['B7','b7','diesel'], SDV:['SDV','sdv','superDiesel'] };
+    for (const k of keys[fuel]||[]) { if (p[k] && +p[k] > 50) return +p[k]; }
+  }
+  // Fallback: scan all numeric fields
+  for (const [,v] of Object.entries(s)) {
+    if (typeof v === 'number' && v > 50 && v < 400) return v;
+  }
+  return null;
+}
+
+function getAllFuelPrices(s) {
+  const labels = { E10:'Petrol', E5:'Super', B7:'Diesel', SDV:'SDV' };
+  const result = [];
+  // Try prices sub-object first
+  if (s.prices) {
+    for (const [k, label] of Object.entries(labels)) {
+      const v = s.prices[k];
+      if (v && +v > 50) result.push({ key: k, label, val: +v });
+    }
+  }
+  // Also check top-level
+  if (!result.length) {
+    for (const [k, label] of Object.entries(labels)) {
+      if (s[k] && +s[k] > 50) result.push({ key: k, label, val: +s[k] });
+    }
+  }
+  return result;
+}
+
+function pCol(p)  { return !p ? '#aaa' : p <= 148 ? '#16a34a' : p <= 158 ? '#b45309' : '#dc2626'; }
+function pCls(p)  { return !p ? '' : p <= 148 ? 'cheap' : p <= 158 ? 'mid' : 'pricey'; }
+function pTag(price, prices) {
+  if (!price || !prices.length) return null;
+  const mn = Math.min(...prices), mx = Math.max(...prices);
+  const pos = mx === mn ? 0.5 : (price - mn) / (mx - mn);
+  if (pos <= .33) return ['tag-cheap', 'Cheapest'];
+  if (pos <= .66) return ['tag-mid', 'Average'];
+  return ['tag-pricey', 'Pricey'];
+}
+
+// ── MAP PIN WITH PRICE LABEL ──────────────────────────────────────────────────
+function mkIcon(price, active) {
+  const col = pCol(price);
+  const sz  = active ? 40 : 32;
+  const fs  = active ? 8.5 : 7.5;
+  const lbl = price ? price.toFixed(1) + 'p' : '?';
+  const border = active ? '#e8421a' : col;
+  return L.divIcon({
+    className: '',
+    html: `<div style="position:relative;width:${sz}px;height:${sz}px;filter:drop-shadow(${active ? '0 3px 8px rgba(232,66,26,.4)' : '0 1px 4px rgba(0,0,0,.22)'})">`
+      + `<div style="position:absolute;inset:0;background:${col};border:2px solid ${border};border-radius:50% 50% 50% 0;transform:rotate(-45deg)"></div>`
+      + `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:3px;`
+      + `color:#fff;font-family:Arial,sans-serif;font-weight:700;font-size:${fs}px;letter-spacing:-.2px;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.4)">${lbl}</div>`
+      + `</div>`,
+    iconSize: [sz, sz],
+    iconAnchor: [sz / 2, sz]
+  });
+}
+
+// Short brand name for map label (first word, max 6 chars)
+function shortBrand(s) {
+  const name = s.brand || s.name || '';
+  const first = name.split(' ')[0];
+  return first.length > 7 ? first.slice(0, 6) + '.' : first;
+}
+
+// ── POPUP ────────────────────────────────────────────────────────────────────
+function buildPopup(s) {
+  const fuel = document.getElementById('fuelSel').value;
+  const LABELS = { E10:'Petrol', E5:'Super', B7:'Diesel', SDV:'SDV' };
+
+  // Build price rows — try prices sub-object first, then top-level fields, then s.price
+  const rows = [];
+
+  // Check prices sub-object
+  if (s.prices && typeof s.prices === 'object') {
+    for (const [k, label] of Object.entries(LABELS)) {
+      const v = s.prices[k];
+      if (v && +v > 50 && +v < 400) rows.push({ label, val: +v, key: k });
+    }
+  }
+
+  // Check top-level keys matching fuel names
+  if (!rows.length) {
+    for (const [k, label] of Object.entries(LABELS)) {
+      const v = s[k];
+      if (v && +v > 50 && +v < 400) rows.push({ label, val: +v, key: k });
+    }
+  }
+
+  // If still nothing, use the direct s.price field for the selected fuel
+  if (!rows.length && s.price && +s.price > 50) {
+    rows.push({ label: LABELS[fuel] || fuel, val: +s.price, key: fuel });
+  }
+
+  const priceRows = rows.map(({label, val, key}) =>
+    `<div style="display:flex;justify-content:space-between;gap:16px;padding:4px 0;border-bottom:1px solid #f0ede8;font-size:.74rem">
+      <span style="color:#555">${label}${key === fuel ? ' ✓' : ''}</span>
+      <span style="font-weight:700;color:${pCol(val)}">${val.toFixed(1)}p</span>
+    </div>`
+  ).join('');
+
+  const updated = s.price_updated
+    ? `<div style="font-size:.55rem;color:#aaa;margin-top:7px">Updated: ${new Date(s.price_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>`
+    : '';
+
+  return `<div style="font-family:'DM Mono',monospace;padding:13px 15px;min-width:195px">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:.92rem;margin-bottom:1px">${s.brand || s.name || 'Station'}</div>
+    <div style="font-size:.62rem;color:#888;margin-bottom:9px;line-height:1.4">${s.address || ''}</div>
+    ${priceRows || `<div style="color:#aaa;font-size:.7rem">No price data</div>`}
+    ${updated}
+  </div>`;
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderResults() {
+  const fuel   = document.getElementById('fuelSel').value;
+  const by     = document.getElementById('sortSel').value;
+  const prices = allStations.map(s => getPrice(s, fuel)).filter(Boolean);
+  const mn = prices.length ? Math.min(...prices) : 0;
+  const mx = prices.length ? Math.max(...prices) : 0;
+
+  sorted = [...allStations].sort((a, b) =>
+    by === 'price'
+      ? (getPrice(a, fuel) || 999) - (getPrice(b, fuel) || 999)
+      : (a.distance || 999) - (b.distance || 999)
+  );
+
+  // Clear markers
+  markers.forEach(m => {
+    if (m) {
+      if (m._labelMarker) map.removeLayer(m._labelMarker);
+      map.removeLayer(m);
+    }
+  });
+  markers = [];
+
+  // Update pill
+  document.getElementById('pillCount').textContent = `${sorted.length} station${sorted.length !== 1 ? 's' : ''}`;
+  document.getElementById('resultsPill').classList.add('show');
+
+  // Update drawer title
+  document.getElementById('drawerTitle').textContent = `${sorted.length} Station${sorted.length !== 1 ? 's' : ''} nearby`;
+
+  const list = document.getElementById('drawerList');
+  list.innerHTML = '';
+
+  sorted.forEach((s, i) => {
+    const price = getPrice(s, fuel);
+    const cls   = pCls(price);
+    const tag   = pTag(price, prices);
+    const fuelPrices = getAllFuelPrices(s);
+    const activeFuelKey = fuel;
+    const chips = fuelPrices.map(({label}) => `<span class="c-chip">${label}</span>`).join('');
+    const others = fuelPrices.filter(({key}) => key !== activeFuelKey)
+      .map(({label, val}) => `<div class="orow"><span>${label}</span><span class="oval">${val.toFixed(1)}p</span></div>`).join('');
+
+    // Card
+    const card = document.createElement('div');
+    card.className = 'card'; card.dataset.i = i;
+    card.innerHTML = `
+      <div>
+        <div class="c-rank">#${i + 1}</div>
+        <div class="c-brand">${s.brand || s.name || 'Station'}</div>
+        <div class="c-addr">${s.address || ''}</div>
+        <div class="c-meta">
+          ${s.distance != null ? `<span class="c-dist">${(+s.distance).toFixed(1)} mi</span>` : ''}
+          ${chips}
+        </div>
+      </div>
+      <div class="pcol">
+        ${price
+          ? `<div class="mprice ${cls}">${price.toFixed(1)}</div>
+             <span class="punit">p/litre</span>
+             ${tag ? `<span class="ptag ${tag[0]}">${tag[1]}</span>` : ''}`
+          : `<div style="color:var(--muted);font-size:.7rem;margin-top:4px">—</div>`}
+        <div class="others">${others}</div>
+      </div>`;
+    card.addEventListener('click', () => selectStation(i));
+    list.appendChild(card);
+
+    // Marker
+    if (s.lat && s.lng) {
+      const mk = L.marker([+s.lat, +s.lng], { icon: mkIcon(price, false) });
+      // Brand name label below pin
+      const brand = shortBrand(s);
+      if (brand) {
+        const label = L.divIcon({
+          className: '',
+          html: `<div style="font-family:'Syne',Arial,sans-serif;font-weight:700;font-size:9px;color:#0d0d0d;background:rgba(255,255,255,.85);padding:1px 4px;border-radius:3px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.15);margin-top:2px">${brand}</div>`,
+          iconSize: [60, 16],
+          iconAnchor: [30, 0]
+        });
+        const labelMarker = L.marker([+s.lat, +s.lng], { icon: label, interactive: false, zIndexOffset: -100 });
+        labelMarker.addTo(map);
+        // Store label with marker so we can remove it
+        mk._labelMarker = labelMarker;
+      }
+      mk.bindPopup(buildPopup(s), { maxWidth: 260, className: '' });
+      mk.on('click', () => selectStation(i));
+      mk.addTo(map);
+      markers.push(mk);
+    } else {
+      markers.push(null);
+    }
+  });
+
+  // Open drawer
+  openDrawer();
+}
+
+function selectStation(i) {
+  document.querySelectorAll('.card').forEach((c, idx) => c.classList.toggle('on', idx === i));
+  const fuel = document.getElementById('fuelSel').value;
+  markers.forEach((m, idx) => {
+    if (m) {
+      m.setIcon(mkIcon(getPrice(sorted[idx], fuel), idx === i));
+    }
+  });
+  const mk = markers[i];
+  if (mk) { map.panTo(mk.getLatLng(), { animate: true }); setTimeout(() => mk.openPopup(), 300); }
+  document.querySelector(`.card[data-i="${i}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Close panel, keep drawer
+  closePanel();
+}
+
+// ── GEOCODING ─────────────────────────────────────────────────────────────────
+async function resolvePostcode(raw) {
+  const q = raw.trim().toUpperCase();
+  const s = q.replace(/\s+/g, '');
+
+  // Normalised candidates
+  const candidates = new Set();
+  if (s.length >= 5) candidates.add(s.slice(0, s.length - 3) + ' ' + s.slice(-3));
+  candidates.add(q);
+  candidates.add(s);
+
+  for (const pc of candidates) {
+    try {
+      const r = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(pc)}`);
+      const d = await r.json();
+      if (d.status === 200) return { lat: d.result.latitude, lng: d.result.longitude };
+    } catch (_) {}
+  }
+
+  // Nominatim fallback
+  try {
+    const r = await fetch(
+      `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(s)}&countrycodes=gb&format=json&limit=1`,
+      { headers: { 'Accept-Language': 'en', 'User-Agent': 'PumpCheck/1.0' } }
+    );
+    const d = await r.json();
+    if (d?.length) return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
+  } catch (_) {}
+
+  // Autocomplete on outward code
+  const outward = s.length > 3 ? s.slice(0, s.length - 3) : s;
+  try {
+    const r = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(outward)}/autocomplete`);
+    const d = await r.json();
+    if (d.status === 200 && d.result?.length) {
+      const r2 = await fetch(`https://api.postcodes.io/postcodes/${encodeURIComponent(d.result[0])}`);
+      const d2 = await r2.json();
+      if (d2.status === 200) return { lat: d2.result.latitude, lng: d2.result.longitude };
+    }
+  } catch (_) {}
+
+  throw new Error(`"${q}" not found. Please check the postcode.`);
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+async function doSearch(oLat, oLng) {
+  hideErr();
+  showLoading(true);
+  allStations = []; sorted = [];
+  markers.forEach(m => {
+    if (m) {
+      if (m._labelMarker) map.removeLayer(m._labelMarker);
+      map.removeLayer(m);
+    }
+  });
+  markers = [];
+  if (circle) { map.removeLayer(circle); circle = null; }
+  document.getElementById('resultsPill').classList.remove('show');
+
+  try {
+    let lat = oLat, lng = oLng;
+    if (lat == null) {
+      const loc = await resolvePostcode(document.getElementById('pcInput').value);
+      lat = loc.lat; lng = loc.lng;
+    }
+
+    const fuel   = document.getElementById('fuelSel').value;
+    const radius = document.getElementById('radSel').value;
+    const url = `/.netlify/functions/stations?lat=${lat}&lng=${lng}&fuel=${fuel}&radius=${radius}`;
+
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`Price service error (${r.status}). Try again shortly.`);
+    const raw = await r.json();
+    const list = (raw.stations || raw || []).filter(s => s?.lat && s?.lng);
+    if (!list.length) throw new Error(`No stations found within ${radius} miles. Try a wider radius.`);
+
+    allStations = list;
+
+    // Radius circle
+    circle = L.circle([lat, lng], {
+      radius: +radius * 1609.34,
+      color: '#e8421a', weight: 1.5, opacity: .3,
+      fillColor: '#e8421a', fillOpacity: .03
+    }).addTo(map);
+
+    const zoom = +radius <= 3 ? 13 : +radius <= 5 ? 12 : +radius <= 10 ? 11 : 10;
+    map.setView([lat, lng], zoom, { animate: true });
+
+    renderResults();
+    closePanel();
+
+  } catch (e) {
+    showErr(e.message || 'Something went wrong. Please try again.');
+  }
+  showLoading(false);
+}
+
+function useGPS() {
+  if (!navigator.geolocation) { showErr('Geolocation not supported by your browser.'); return; }
+  hideErr();
+  showLoading(true);
+  navigator.geolocation.getCurrentPosition(
+    p => doSearch(p.coords.latitude, p.coords.longitude),
+    () => { showErr('Could not get your location. Enter a postcode instead.'); showLoading(false); }
+  );
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function togglePanel() {
+  panelOpen ? closePanel() : openPanel();
+}
+function openPanel() {
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('fab').classList.add('open');
+  document.getElementById('fab').querySelector('span').textContent = '✕';
+  panelOpen = true;
+}
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('fab').classList.remove('open');
+  document.getElementById('fab').querySelector('span').textContent = '⛽';
+  panelOpen = false;
+}
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open');
+  drawerOpen = true;
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  drawerOpen = false;
+}
+function toggleDrawer() {
+  drawerOpen ? closeDrawer() : openDrawer();
+}
+
+function showLoading(on) {
+  document.getElementById('loadingOverlay').classList.toggle('show', on);
+  document.getElementById('btnSearch').disabled = on;
+  document.getElementById('btnSearch').textContent = on ? '…' : 'Search';
+}
+function showErr(m) {
+  const e = document.getElementById('errMsg');
+  e.textContent = '⚠ ' + m; e.style.display = 'block';
+  if (!panelOpen) openPanel();
+}
+function hideErr() { document.getElementById('errMsg').style.display = 'none'; }
+
+function onPcInput(el) {
+  document.getElementById('pcClear').classList.toggle('show', el.value.length > 0);
+}
+function clearPc() {
+  document.getElementById('pcInput').value = '';
+  document.getElementById('pcClear').classList.remove('show');
+  document.getElementById('pcInput').focus();
+}
+
+// Enter key triggers search
+document.getElementById('pcInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+});
+
+// Close panel when tapping map
+map.on('click', () => { if (panelOpen) closePanel(); });
+
+// Open panel on load
+window.addEventListener('load', () => setTimeout(openPanel, 400));
+</script>
+</body>
+</html>
