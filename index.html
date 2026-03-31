@@ -26,260 +26,142 @@
   --mono: ui-monospace,'SF Mono','Cascadia Mono',Menlo,monospace;
   --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
 }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;width:100%;overflow:hidden}
+body{font-family:var(--mono);background:var(--navy-10);color:var(--navy);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
 
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-html,body { height:100%; width:100%; overflow:hidden; }
-body { font-family:var(--mono); background:var(--navy-10); color:var(--navy); font-size:13px; line-height:1.5; -webkit-font-smoothing:antialiased; }
-
-/* MAP */
-#map { position:fixed; inset:0; z-index:0; }
+#map{position:fixed;inset:0;z-index:0}
 
 /* FAB */
-.fab {
-  position:fixed; bottom:24px; right:20px; z-index:1000;
-  width:54px; height:54px; border-radius:50%;
-  background:var(--navy); border:3px solid var(--amber);
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  font-size:1.35rem;
-  box-shadow:0 4px 16px rgba(31,41,51,.35);
-  transition:transform .18s, background .18s;
-}
-.fab:hover { transform:scale(1.07); }
-.fab:active { transform:scale(.94); }
-.fab.open { background:var(--navy); }
-.fab-dot {
-  position:absolute; top:4px; right:4px;
-  width:9px; height:9px;
-  background:var(--amber); border-radius:50%;
-  border:2px solid var(--navy);
-  animation:blink 2s ease-in-out infinite;
-}
-.fab.open .fab-dot { display:none; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+.fab{position:fixed;bottom:24px;right:20px;z-index:1000;width:54px;height:54px;border-radius:50%;background:var(--navy);border:3px solid var(--amber);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.35rem;box-shadow:0 4px 16px rgba(31,41,51,.35);transition:transform .18s,background .18s}
+.fab:hover{transform:scale(1.07)}.fab:active{transform:scale(.94)}
+.fab-dot{position:absolute;top:4px;right:4px;width:9px;height:9px;background:var(--amber);border-radius:50%;border:2px solid var(--navy);animation:blink 2s ease-in-out infinite}
+.fab.open .fab-dot{display:none}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* SETTINGS FAB */
+.fab-settings{position:fixed;bottom:88px;right:20px;z-index:1000;width:40px;height:40px;border-radius:50%;background:var(--white);border:1.5px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 2px 8px rgba(31,41,51,.15);transition:transform .15s,border-color .15s}
+.fab-settings:hover{transform:scale(1.07);border-color:var(--amber)}
 
 /* PANEL */
-.panel {
-  position:fixed; bottom:90px; right:16px; z-index:999;
-  width:min(360px, calc(100vw - 32px));
-  background:var(--white);
-  border:2px solid var(--border);
-  border-top:3px solid var(--amber);
-  border-radius:3px;
-  box-shadow:0 8px 28px rgba(31,41,51,.18);
-  overflow:hidden;
-  transform:scale(.87) translateY(14px);
-  opacity:0; pointer-events:none;
-  transition:transform .22s cubic-bezier(.34,1.4,.64,1), opacity .18s;
-  transform-origin:bottom right;
-}
-.panel.open { transform:scale(1) translateY(0); opacity:1; pointer-events:all; }
+.panel{position:fixed;bottom:90px;right:16px;z-index:999;width:min(360px,calc(100vw - 32px));background:var(--white);border:2px solid var(--border);border-top:3px solid var(--amber);border-radius:3px;box-shadow:0 8px 28px rgba(31,41,51,.18);overflow:hidden;transform:scale(.87) translateY(14px);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.34,1.4,.64,1),opacity .18s;transform-origin:bottom right}
+.panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+.panel-head{background:var(--navy);border-bottom:3px solid var(--amber);padding:11px 14px;display:flex;align-items:center;justify-content:space-between}
+.panel-logo{font-family:var(--sans);font-weight:800;font-size:.88rem;color:var(--white);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.panel-logo-dot{width:7px;height:7px;background:var(--amber);border-radius:50%;animation:blink 2s ease-in-out infinite}
+.live-pill{font-family:var(--mono);font-size:.5rem;background:transparent;color:rgba(255,255,255,.45);letter-spacing:.04em;font-style:italic;max-width:140px;text-align:right;line-height:1.3}
+.panel-body{padding:13px;display:flex;flex-direction:column;gap:9px}
+.pc-row{display:flex;gap:7px;align-items:stretch}
+.pc-wrap{position:relative;flex:1}
+.pc-input{width:100%;background:var(--navy-10);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.82rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:10px 32px 10px 11px;border-radius:3px;outline:none;transition:border-color .15s,background .15s}
+.pc-input::placeholder{text-transform:none;font-weight:400;font-size:.7rem;letter-spacing:0;color:var(--navy-60)}
+.pc-input:focus{border-color:var(--amber);background:var(--white)}
+.pc-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--navy-60);font-size:.82rem;cursor:pointer;padding:2px;display:none;line-height:1}
+.pc-clear.show{display:block}
+.gps-btn{background:var(--navy);border:1.5px solid var(--amber);color:var(--amber);font-size:1rem;padding:0 13px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,color .15s}
+.gps-btn:hover{background:var(--amber);color:var(--navy)}
+.ctrl-row{display:flex;gap:7px;align-items:stretch}
+select.ctl{flex:1;background:var(--navy-10);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.7rem;padding:9px 7px;border-radius:3px;outline:none;cursor:pointer;min-width:0;transition:border-color .12s}
+select.ctl:focus{border-color:var(--amber)}
+.search-btn{background:var(--amber);color:var(--navy);border:none;font-family:var(--sans);font-weight:800;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;padding:9px 16px;border-radius:3px;cursor:pointer;transition:opacity .15s;white-space:nowrap;flex-shrink:0}
+.search-btn:hover{opacity:.88}.search-btn:disabled{opacity:.35;cursor:not-allowed}
+.err-msg{background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;border-left:3px solid #dc2626;padding:7px 10px;border-radius:3px;font-size:.68rem;line-height:1.5;display:none}
+.results-pill{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-left:3px solid var(--amber);border-radius:3px;padding:5px 10px;display:none;align-items:center;gap:6px}
+.results-pill.show{display:flex}
+.pill-count{font-family:var(--mono);font-weight:700;font-size:.65rem;color:var(--amber-text);text-transform:uppercase;letter-spacing:.08em}
 
-.panel-head {
-  background:var(--navy);
-  border-bottom:3px solid var(--amber);
-  padding:11px 14px;
-  display:flex; align-items:center; justify-content:space-between;
-}
-.panel-logo {
-  font-family:var(--sans); font-weight:800; font-size:.92rem;
-  color:var(--white); letter-spacing:2.5px; text-transform:uppercase;
-  display:flex; align-items:center; gap:8px;
-}
-.panel-logo-dot {
-  width:7px; height:7px; background:var(--amber); border-radius:50%;
-  animation:blink 2s ease-in-out infinite;
-}
-.live-pill {
-  font-family:var(--mono); font-size:.58rem;
-  background:var(--amber); color:var(--navy);
-  padding:3px 8px; border-radius:2px;
-  letter-spacing:.08em; text-transform:uppercase; font-weight:700;
-}
-
-.panel-body { padding:13px; display:flex; flex-direction:column; gap:9px; }
-
-/* Postcode row */
-.pc-row { display:flex; gap:7px; align-items:stretch; }
-.pc-wrap { position:relative; flex:1; }
-.pc-input {
-  width:100%; background:var(--navy-10);
-  border:1.5px solid var(--border);
-  color:var(--navy); font-family:var(--mono);
-  font-size:.82rem; font-weight:600;
-  letter-spacing:.06em; text-transform:uppercase;
-  padding:10px 32px 10px 11px; border-radius:3px;
-  outline:none; transition:border-color .15s, background .15s;
-}
-.pc-input::placeholder {
-  text-transform:none; font-weight:400; font-size:.7rem;
-  letter-spacing:0; color:var(--navy-60);
-}
-.pc-input:focus { border-color:var(--amber); background:var(--white); }
-.pc-clear {
-  position:absolute; right:8px; top:50%; transform:translateY(-50%);
-  background:none; border:none; color:var(--navy-60);
-  font-size:.82rem; cursor:pointer; padding:2px; display:none; line-height:1;
-}
-.pc-clear.show { display:block; }
-.gps-btn {
-  background:var(--navy); border:1.5px solid var(--amber);
-  color:var(--amber); font-size:1rem;
-  padding:0 13px; border-radius:3px;
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; transition:background .15s, color .15s;
-}
-.gps-btn:hover { background:var(--amber); color:var(--navy); }
-
-/* Controls row */
-.ctrl-row { display:flex; gap:7px; align-items:stretch; }
-select.ctl {
-  flex:1; background:var(--navy-10);
-  border:1.5px solid var(--border);
-  color:var(--navy); font-family:var(--mono);
-  font-size:.7rem; padding:9px 7px;
-  border-radius:3px; outline:none; cursor:pointer; min-width:0;
-  transition:border-color .12s;
-}
-select.ctl:focus { border-color:var(--amber); }
-.search-btn {
-  background:var(--amber); color:var(--navy); border:none;
-  font-family:var(--sans); font-weight:800; font-size:.72rem;
-  letter-spacing:.04em; text-transform:uppercase;
-  padding:9px 16px; border-radius:3px;
-  cursor:pointer; transition:opacity .15s; white-space:nowrap; flex-shrink:0;
-}
-.search-btn:hover { opacity:.88; }
-.search-btn:disabled { opacity:.35; cursor:not-allowed; }
-
-/* Error */
-.err-msg {
-  background:#fee2e2; color:#dc2626;
-  border:1.5px solid #fca5a5; border-left:3px solid #dc2626;
-  padding:7px 10px; border-radius:3px;
-  font-size:.68rem; line-height:1.5; display:none;
-}
-
-/* Results pill */
-.results-pill {
-  background:var(--amber-bg);
-  border:1.5px solid var(--amber-border); border-left:3px solid var(--amber);
-  border-radius:3px; padding:5px 10px;
-  display:none; align-items:center; gap:6px;
-}
-.results-pill.show { display:flex; }
-.pill-count {
-  font-family:var(--mono); font-weight:700; font-size:.65rem;
-  color:var(--amber-text); text-transform:uppercase; letter-spacing:.08em;
-}
+/* SETTINGS PANEL */
+.settings-panel{position:fixed;bottom:90px;right:16px;z-index:998;width:min(320px,calc(100vw - 32px));background:var(--white);border:2px solid var(--border);border-top:3px solid var(--amber);border-radius:3px;box-shadow:0 8px 28px rgba(31,41,51,.18);overflow:hidden;transform:scale(.87) translateY(14px);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.34,1.4,.64,1),opacity .18s;transform-origin:bottom right}
+.settings-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+.settings-head{background:var(--navy);border-bottom:3px solid var(--amber);padding:10px 14px;display:flex;align-items:center;justify-content:space-between}
+.settings-title{font-family:var(--sans);font-weight:800;font-size:.82rem;color:var(--white);letter-spacing:1.5px;text-transform:uppercase}
+.settings-close{background:none;border:none;color:rgba(255,255,255,.5);font-size:1rem;cursor:pointer;padding:2px 6px}
+.settings-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+.setting-row{display:flex;flex-direction:column;gap:5px}
+.setting-label{font-family:var(--mono);font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--amber-text)}
+.setting-desc{font-size:.62rem;color:var(--navy-60);line-height:1.4}
+.setting-input-row{display:flex;align-items:center;gap:8px}
+.setting-input{background:var(--navy-10);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.82rem;font-weight:600;padding:8px 10px;border-radius:3px;outline:none;width:90px;transition:border-color .15s}
+.setting-input:focus{border-color:var(--amber)}
+.setting-unit{font-size:.68rem;color:var(--navy-60)}
+.setting-save{background:var(--amber);color:var(--navy);border:none;font-family:var(--sans);font-weight:800;font-size:.7rem;letter-spacing:.04em;text-transform:uppercase;padding:8px 14px;border-radius:3px;cursor:pointer;margin-top:4px;width:100%;transition:opacity .15s}
+.setting-save:hover{opacity:.88}
+.baseline-info{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-left:3px solid var(--amber);border-radius:3px;padding:8px 10px;font-size:.65rem;color:var(--amber-text);line-height:1.5}
+.baseline-clear{background:none;border:1px solid var(--border);color:var(--navy-60);font-family:var(--mono);font-size:.62rem;padding:3px 8px;border-radius:3px;cursor:pointer;margin-top:5px;display:block;width:100%;transition:border-color .12s}
+.baseline-clear:hover{border-color:var(--pricey);color:var(--pricey)}
 
 /* DRAWER */
-.drawer {
-  position:fixed; bottom:0; left:0; right:0; z-index:998;
-  background:var(--white);
-  border-top:3px solid var(--amber);
-  box-shadow:0 -4px 20px rgba(31,41,51,.14);
-  transform:translateY(100%);
-  transition:transform .28s cubic-bezier(.4,0,.2,1);
-  max-height:55vh; display:flex; flex-direction:column;
-}
-.drawer.open { transform:translateY(0); }
-.drawer-handle {
-  width:30px; height:3px; background:var(--amber);
-  border-radius:2px; margin:9px auto 0;
-  flex-shrink:0; cursor:pointer;
-}
-.drawer-header {
-  padding:8px 14px 7px; border-bottom:1.5px solid var(--border);
-  flex-shrink:0; display:flex; align-items:center; justify-content:space-between;
-  background:var(--navy-10);
-}
-.drawer-title {
-  font-family:var(--mono); font-weight:700; font-size:.65rem;
-  text-transform:uppercase; letter-spacing:.1em; color:var(--amber-text);
-}
-.drawer-close {
-  background:none; border:none; font-size:.95rem;
-  color:var(--navy-60); cursor:pointer; padding:2px 6px; border-radius:2px;
-}
-.drawer-close:hover { background:var(--border); }
-select.pill-sort {
-  background:var(--white); border:1.5px solid var(--border);
-  color:var(--navy); font-family:var(--mono); font-size:.62rem;
-  padding:4px 7px; border-radius:3px; outline:none; cursor:pointer;
-  transition:border-color .12s;
-}
-select.pill-sort:focus { border-color:var(--amber); }
-.drawer-list { overflow-y:auto; flex:1; -webkit-overflow-scrolling:touch; }
+.drawer{position:fixed;bottom:0;left:0;right:0;z-index:997;background:var(--white);border-top:3px solid var(--amber);box-shadow:0 -4px 20px rgba(31,41,51,.14);transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);height:42vh;display:flex;flex-direction:column}
+.drawer.open{transform:translateY(0)}
+.drawer-handle{display:none}
+.drawer-header{padding:8px 14px 7px;border-bottom:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;background:var(--navy-10)}
+.drawer-title{font-family:var(--mono);font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--amber-text)}
+.drawer-close{background:none;border:none;font-size:.95rem;color:var(--navy-60);cursor:pointer;padding:2px 6px;border-radius:2px}
+.drawer-close:hover{background:var(--border)}
+select.pill-sort{background:var(--white);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.62rem;padding:4px 7px;border-radius:3px;outline:none;cursor:pointer}
+select.pill-sort:focus{border-color:var(--amber)}
+.drawer-list{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
 
 /* STATION CARD */
-.card {
-  padding:10px 14px; border-bottom:1.5px solid var(--border);
-  cursor:pointer; transition:background .1s;
-  display:grid; grid-template-columns:1fr auto; gap:8px; align-items:start;
-}
-.card:hover { background:var(--amber-bg); }
-.card.on { background:var(--amber-bg); border-left:3px solid var(--amber); padding-left:11px; }
-.c-rank {
-  font-family:var(--mono); font-size:.55rem;
-  color:var(--amber-text); margin-bottom:2px;
-  letter-spacing:.06em; text-transform:uppercase; font-weight:700;
-}
-.c-brand { font-family:var(--sans); font-weight:700; font-size:.82rem; margin-bottom:2px; color:var(--navy); }
-.c-addr { font-size:.62rem; color:var(--navy-60); line-height:1.4; margin-bottom:4px; }
-.c-meta { display:flex; align-items:center; gap:4px; flex-wrap:wrap; }
-.c-dist {
-  font-family:var(--mono); font-size:.55rem;
-  background:var(--navy-10); border:1px solid var(--border);
-  color:var(--navy-60); padding:2px 5px; border-radius:2px;
-}
-.c-chip {
-  font-family:var(--mono); font-size:.53rem;
-  padding:2px 5px; border-radius:2px;
-  border:1px solid var(--amber-border);
-  color:var(--amber-text); background:var(--amber-bg);
-}
-.pcol { text-align:right; }
-.mprice { font-family:var(--sans); font-weight:800; font-size:1.25rem; line-height:1; }
-.cheap  { color:var(--cheap); }
-.mid    { color:var(--mid); }
-.pricey { color:var(--pricey); }
-.punit  { font-family:var(--mono); font-size:.53rem; color:var(--navy-60); display:block; margin:2px 0 3px; }
-.ptag   { font-family:var(--mono); font-size:.52rem; font-weight:700; padding:2px 6px; border-radius:2px; text-transform:uppercase; letter-spacing:.05em; display:inline-block; }
-.tag-cheap  { background:#dcfce7; color:#15803d; border:1px solid #86efac; }
-.tag-mid    { background:#fde68a; color:#92400e; border:1px solid #fbbf24; }
-.tag-pricey { background:#fee2e2; color:#dc2626; border:1px solid #fca5a5; }
-.others { margin-top:3px; }
-.orow { display:flex; justify-content:space-between; font-family:var(--mono); font-size:.53rem; color:var(--navy-60); gap:5px; margin-top:1px; }
-.oval { font-weight:600; color:var(--navy); }
+.card{padding:10px 14px;border-bottom:1.5px solid var(--border);cursor:pointer;transition:background .1s;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;position:relative}
+.card:hover{background:var(--amber-bg)}
+.card.on{background:var(--amber-bg);border-left:3px solid var(--amber);padding-left:11px}
+.card.is-baseline{background:var(--amber-bg)}
+.c-rank{font-family:var(--mono);font-size:.55rem;color:var(--amber-text);margin-bottom:2px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.c-brand{font-family:var(--sans);font-weight:700;font-size:.82rem;margin-bottom:1px;color:var(--navy);display:flex;align-items:center;gap:6px}
+.c-star{background:none;border:none;cursor:pointer;font-size:.85rem;padding:0;line-height:1;opacity:.4;transition:opacity .15s,transform .15s;flex-shrink:0}
+.c-star:hover{opacity:1;transform:scale(1.2)}
+.c-star.starred{opacity:1}
+.c-addr{font-size:.62rem;color:var(--navy-60);line-height:1.4;margin-bottom:4px;text-decoration:none;display:block;transition:color .15s}
+.c-addr:hover{color:var(--amber-text);text-decoration:underline}
+.c-meta{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.c-dist{font-family:var(--mono);font-size:.55rem;background:var(--navy-10);border:1px solid var(--border);color:var(--navy-60);padding:2px 5px;border-radius:2px}
+.c-chip{font-family:var(--mono);font-size:.53rem;padding:2px 5px;border-radius:2px;border:1px solid var(--amber-border);color:var(--amber-text);background:var(--amber-bg)}
+.c-baseline-badge{font-family:var(--mono);font-size:.52rem;font-weight:700;background:var(--amber);color:var(--navy);padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em}
+.pcol{text-align:right}
+.mprice{font-family:var(--sans);font-weight:800;font-size:1.25rem;line-height:1}
+.cheap{color:var(--cheap)}.mid{color:var(--mid)}.pricey{color:var(--pricey)}
+.punit{font-family:var(--mono);font-size:.53rem;color:var(--navy-60);display:block;margin:2px 0 2px}
+.ptag{font-family:var(--mono);font-size:.52rem;font-weight:700;padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em;display:inline-block;margin-bottom:4px}
+.tag-cheap{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+.tag-mid{background:#fde68a;color:#92400e;border:1px solid #fbbf24}
+.tag-pricey{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5}
+
+/* SAVING BADGE */
+.saving-block{margin-top:5px;padding:3px 7px;border-radius:3px;border:1.5px solid;display:flex;align-items:center;justify-content:space-between;gap:6px;cursor:pointer}
+.saving-block.worth-it{background:#dcfce7;border-color:#86efac}
+.saving-block.small-saving{background:#fef9c3;border-color:#fde047}
+.saving-block.not-worth{background:#fee2e2;border-color:#fca5a5}
+.saving-block.is-ref{background:var(--amber-bg);border-color:var(--amber-border);cursor:default}
+.saving-amount{font-family:var(--sans);font-weight:800;font-size:.8rem;flex-shrink:0}
+.saving-amount.worth-it{color:#15803d}
+.saving-amount.small-saving{color:#a16207}
+.saving-amount.not-worth{color:#dc2626}
+.saving-amount.is-ref{color:var(--amber-text)}
+.saving-label{font-family:var(--mono);font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;flex:1;text-align:right}
+.saving-label.worth-it{color:#15803d}
+.saving-label.small-saving{color:#a16207}
+.saving-label.not-worth{color:#dc2626}
+.saving-label.is-ref{color:var(--amber-text)}
+.saving-detail{font-family:var(--mono);font-size:.55rem;color:var(--navy-60);margin-top:4px;padding:4px 7px 5px;line-height:1.5;border-top:1px solid;display:none}
+.saving-detail.worth-it{border-color:#86efac}.saving-detail.small-saving{border-color:#fde047}.saving-detail.not-worth{border-color:#fca5a5}
+.saving-detail.open{display:block}
+
+.others{margin-top:3px}
+.orow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.53rem;color:var(--navy-60);gap:5px;margin-top:1px}
+.oval{font-weight:600;color:var(--navy)}
 
 /* LOADING */
-.loading-overlay {
-  position:fixed; inset:0; z-index:2000;
-  background:rgba(31,41,51,.65); backdrop-filter:blur(3px);
-  display:none; align-items:center; justify-content:center; flex-direction:column; gap:12px;
-}
-.loading-overlay.show { display:flex; }
-.spin-ring {
-  width:34px; height:34px;
-  border:3px solid rgba(242,201,76,.2); border-top-color:var(--amber);
-  border-radius:50%; animation:spin .7s linear infinite;
-}
-@keyframes spin { to { transform:rotate(360deg); } }
-.loading-label {
-  font-family:var(--mono); color:var(--amber);
-  font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
-}
+.loading-overlay{position:fixed;inset:0;z-index:2000;background:rgba(31,41,51,.65);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.loading-overlay.show{display:flex}
+.spin-ring{width:34px;height:34px;border:3px solid rgba(242,201,76,.2);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-label{font-family:var(--mono);color:var(--amber);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase}
 
-/* LEAFLET POPUP */
-.leaflet-popup-content-wrapper {
-  border-radius:3px !important;
-  font-family:var(--mono) !important;
-  box-shadow:0 4px 20px rgba(31,41,51,.2) !important;
-  border-top:3px solid var(--amber) !important;
-  padding:0 !important;
-}
-.leaflet-popup-content { margin:0 !important; }
-.leaflet-popup-close-button { top:8px !important; right:10px !important; color:var(--navy-60) !important; }
+/* POPUP */
+.leaflet-popup-content-wrapper{border-radius:3px !important;font-family:var(--mono) !important;box-shadow:0 4px 20px rgba(31,41,51,.2) !important;border-top:3px solid var(--amber) !important;padding:0 !important}
+.leaflet-popup-content{margin:0 !important}
+.leaflet-popup-close-button{top:8px !important;right:10px !important;color:var(--navy-60) !important}
 </style>
 </head>
 <body>
@@ -291,15 +173,20 @@ select.pill-sort:focus { border-color:var(--amber); }
   <div class="loading-label">Finding stations…</div>
 </div>
 
+<!-- Settings FAB -->
+<button class="fab-settings" onclick="toggleSettings()" title="Settings">⚙️</button>
+
+<!-- Main FAB -->
 <button class="fab" id="fab" onclick="togglePanel()" title="Expensive Petroleum 🪄">
   <span>⛽</span>
   <div class="fab-dot"></div>
 </button>
 
+<!-- Search panel -->
 <div class="panel" id="panel">
   <div class="panel-head">
     <div class="panel-logo"><div class="panel-logo-dot"></div>🪄 Expensive Petroleum</div>
-    <div class="live-pill">"Expensive Petroleum" — Ron Weasley</div>
+    <div class="live-pill">"Expensive Petroleum"<br>— Ron Weasley</div>
   </div>
   <div class="panel-body">
     <div class="pc-row">
@@ -335,6 +222,43 @@ select.pill-sort:focus { border-color:var(--amber); }
   </div>
 </div>
 
+<!-- Settings panel -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-head">
+    <div class="settings-title">⚙️ Settings</div>
+    <button class="settings-close" onclick="toggleSettings()">✕</button>
+  </div>
+  <div class="settings-body">
+
+    <div class="setting-row">
+      <div class="setting-label">Tank size</div>
+      <div class="setting-desc">How many litres you typically fill up</div>
+      <div class="setting-input-row">
+        <input class="setting-input" id="litresSetting" type="number" min="10" max="120" value="40"/>
+        <span class="setting-unit">litres</span>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div class="setting-label">Fuel efficiency</div>
+      <div class="setting-desc">Your car's average fuel economy</div>
+      <div class="setting-input-row">
+        <input class="setting-input" id="mpgSetting" type="number" min="10" max="200" value="40"/>
+        <span class="setting-unit">MPG</span>
+      </div>
+    </div>
+
+    <div class="setting-row" id="baselineInfoRow" style="display:none">
+      <div class="setting-label">⭐ Your reference station</div>
+      <div class="baseline-info" id="baselineInfo"></div>
+      <button class="baseline-clear" onclick="clearBaseline()">Remove reference station</button>
+    </div>
+
+    <button class="setting-save" onclick="saveSettings()">Save settings</button>
+  </div>
+</div>
+
+<!-- Results drawer -->
 <div class="drawer" id="drawer">
   <div class="drawer-handle" onclick="toggleDrawer()"></div>
   <div class="drawer-header">
@@ -351,22 +275,79 @@ select.pill-sort:focus { border-color:var(--amber); }
 </div>
 
 <script>
-const map = L.map('map', { zoomControl:false }).setView([52.04,-0.76],11);
+// ── MAP ───────────────────────────────────────────────────────────────────────
+const map = L.map('map',{zoomControl:false}).setView([52.04,-0.76],11);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
-  attribution:'© OpenStreetMap © CARTO', subdomains:'abcd', maxZoom:19
+  attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:19
 }).addTo(map);
-L.control.zoom({ position:'topright' }).addTo(map);
+L.control.zoom({position:'topright'}).addTo(map);
 
+// ── STATE ─────────────────────────────────────────────────────────────────────
 let allStations=[], sorted=[], markers=[], circle=null;
-let panelOpen=false, drawerOpen=false;
+let panelOpen=false, drawerOpen=false, settingsOpen=false;
 
+// ── SETTINGS (localStorage) ───────────────────────────────────────────────────
+function getSettings() {
+  return {
+    litres: parseFloat(localStorage.getItem('ep_litres')||'40'),
+    mpg:    parseFloat(localStorage.getItem('ep_mpg')||'40'),
+  };
+}
+function saveSettings() {
+  const l = parseFloat(document.getElementById('litresSetting').value)||40;
+  const m = parseFloat(document.getElementById('mpgSetting').value)||40;
+  localStorage.setItem('ep_litres', l);
+  localStorage.setItem('ep_mpg', m);
+  // Flash the button
+  const btn = document.querySelector('.setting-save');
+  btn.textContent = '✓ Saved';
+  setTimeout(()=>btn.textContent='Save settings', 1500);
+  renderResults(); // recalculate savings
+}
+
+// Baseline station (starred)
+function getBaselineId()  { return localStorage.getItem('ep_baseline_id')||null; }
+function getBaselineName(){ return localStorage.getItem('ep_baseline_name')||''; }
+function setBaseline(id, name) {
+  localStorage.setItem('ep_baseline_id', id);
+  localStorage.setItem('ep_baseline_name', name);
+  updateBaselineInfo();
+  renderResults();
+}
+function clearBaseline() {
+  localStorage.removeItem('ep_baseline_id');
+  localStorage.removeItem('ep_baseline_name');
+  updateBaselineInfo();
+  renderResults();
+}
+function updateBaselineInfo() {
+  const id = getBaselineId();
+  const row = document.getElementById('baselineInfoRow');
+  const info = document.getElementById('baselineInfo');
+  if (id) {
+    row.style.display = 'block';
+    info.textContent = `⭐ ${getBaselineName()} — savings calculated against this station`;
+  } else {
+    row.style.display = 'none';
+  }
+}
+
+// Init settings inputs from localStorage
+function initSettingsPanel() {
+  const s = getSettings();
+  document.getElementById('litresSetting').value = s.litres;
+  document.getElementById('mpgSetting').value    = s.mpg;
+  updateBaselineInfo();
+}
+
+// ── PRICE HELPERS ─────────────────────────────────────────────────────────────
 function getPrice(s, fuel) {
   fuel = fuel || document.getElementById('fuelSel').value;
-  if (s.price && +s.price > 50) return +s.price;
+  if (s.price && +s.price>50) return +s.price;
   if (s.prices) {
     const p=s.prices;
     const keys={E10:['E10','e10'],E5:['E5','e5'],B7:['B7','b7'],SDV:['SDV','sdv']};
-    for (const k of keys[fuel]||[]) { if (p[k]&&+p[k]>50) return +p[k]; }
+    for (const k of keys[fuel]||[]) { if(p[k]&&+p[k]>50) return +p[k]; }
   }
   for (const [,v] of Object.entries(s)) {
     if (typeof v==='number'&&v>50&&v<400) return v;
@@ -379,12 +360,12 @@ function getAllFuelPrices(s) {
   const result=[];
   if (s.prices) {
     for (const [k,label] of Object.entries(labels)) {
-      const v=s.prices[k]; if (v&&+v>50) result.push({key:k,label,val:+v});
+      const v=s.prices[k]; if(v&&+v>50) result.push({key:k,label,val:+v});
     }
   }
   if (!result.length) {
     for (const [k,label] of Object.entries(labels)) {
-      if (s[k]&&+s[k]>50) result.push({key:k,label,val:+s[k]});
+      if(s[k]&&+s[k]>50) result.push({key:k,label,val:+s[k]});
     }
   }
   return result;
@@ -394,13 +375,68 @@ function pCol(p) { return !p?'#aaa':p<=148?'#16a34a':p<=158?'#b45309':'#dc2626';
 function pCls(p) { return !p?'':p<=148?'cheap':p<=158?'mid':'pricey'; }
 function pTag(price, prices) {
   if (!price||!prices.length) return null;
-  const mn=Math.min(...prices), mx=Math.max(...prices);
+  const mn=Math.min(...prices),mx=Math.max(...prices);
   const pos=mx===mn?0.5:(price-mn)/(mx-mn);
   if (pos<=.33) return ['tag-cheap','Cheapest'];
   if (pos<=.66) return ['tag-mid','Average'];
   return ['tag-pricey','Pricey'];
 }
 
+// ── SAVINGS CALCULATION ───────────────────────────────────────────────────────
+function calcSaving(targetStation, baselinePrice, baselineDist) {
+  const {litres, mpg} = getSettings();
+  const targetPrice = getPrice(targetStation);
+  if (!targetPrice || !baselinePrice) return null;
+
+  const targetDist = parseFloat(targetStation.distance)||0;
+
+  // Gross saving from cheaper price
+  const grossSaving = (baselinePrice - targetPrice) * litres / 100; // £
+
+  // Extra round-trip miles vs baseline
+  const extraMiles = Math.max(0, (targetDist * 2) - (baselineDist * 2));
+
+  // Cost of extra drive
+  const fuelUsedGallons = extraMiles / mpg;
+  const fuelUsedLitres  = fuelUsedGallons * 4.54609;
+  const driveCost       = fuelUsedLitres * targetPrice / 100; // £
+
+  const netSaving = grossSaving - driveCost;
+
+  return { netSaving, grossSaving, driveCost, extraMiles, targetPrice, baselinePrice, litres };
+}
+
+function savingBlock(saving, isBaseline, idx) {
+  if (isBaseline) {
+    return `<div class="saving-block is-ref">
+      <span class="saving-amount is-ref">⭐ Reference</span>
+      <span class="saving-label is-ref">Your comparison point</span>
+    </div>`;
+  }
+  if (!saving) return '';
+
+  const {netSaving, grossSaving, driveCost, extraMiles} = saving;
+  let cls, label;
+  if (netSaving > 1.00)       { cls='worth-it';     label='Worth it ✓'; }
+  else if (netSaving > 0.20)  { cls='small-saving';  label='Small saving'; }
+  else if (netSaving >= 0)    { cls='not-worth';     label='Marginal'; }
+  else                         { cls='not-worth';     label='Not worth it'; }
+
+  const sign = netSaving >= 0 ? '+' : '−';
+  const detailLines = [
+    `Fuel saving: £${grossSaving.toFixed(2)} (${Math.abs(saving.baselinePrice - saving.targetPrice).toFixed(1)}p/L × ${saving.litres}L)`,
+    extraMiles > 0.1 ? `Extra drive: ${extraMiles.toFixed(1)} mi → £${driveCost.toFixed(2)} cost` : `Same distance as reference`,
+    `Net: ${sign}£${Math.abs(netSaving).toFixed(2)}`
+  ].join('<br>');
+
+  return `<div class="saving-block ${cls}" onclick="event.stopPropagation();toggleSavingDetail(${idx})">
+      <span class="saving-amount ${cls}">${sign}£${Math.abs(netSaving).toFixed(2)}</span>
+      <span class="saving-label ${cls}">${label} ▾</span>
+    </div>
+    <div class="saving-detail ${cls}" id="sd-${idx}">${detailLines}</div>`;
+}
+
+// ── MAP PIN ───────────────────────────────────────────────────────────────────
 function mkIcon(price, active) {
   const col=pCol(price), sz=active?40:32, fs=active?8.5:7.5;
   const lbl=price?price.toFixed(1)+'p':'?';
@@ -411,7 +447,7 @@ function mkIcon(price, active) {
       +`<div style="position:absolute;inset:0;background:${col};border:2px solid ${border};border-radius:50% 50% 50% 0;transform:rotate(-45deg)"></div>`
       +`<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:3px;color:#fff;font-family:Arial,sans-serif;font-weight:700;font-size:${fs}px;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.4)">${lbl}</div>`
       +`</div>`,
-    iconSize:[sz,sz], iconAnchor:[sz/2,sz]
+    iconSize:[sz,sz],iconAnchor:[sz/2,sz]
   });
 }
 
@@ -420,18 +456,19 @@ function shortBrand(s) {
   return first.length>7?first.slice(0,6)+'.':first;
 }
 
+// ── POPUP ─────────────────────────────────────────────────────────────────────
 function buildPopup(s) {
   const fuel=document.getElementById('fuelSel').value;
   const LABELS={E10:'Petrol',E5:'Super',B7:'Diesel',SDV:'SDV'};
   const rows=[];
   if (s.prices&&typeof s.prices==='object') {
     for (const [k,label] of Object.entries(LABELS)) {
-      const v=s.prices[k]; if (v&&+v>50&&+v<400) rows.push({label,val:+v,key:k});
+      const v=s.prices[k]; if(v&&+v>50&&+v<400) rows.push({label,val:+v,key:k});
     }
   }
   if (!rows.length) {
     for (const [k,label] of Object.entries(LABELS)) {
-      const v=s[k]; if (v&&+v>50&&+v<400) rows.push({label,val:+v,key:k});
+      const v=s[k]; if(v&&+v>50&&+v<400) rows.push({label,val:+v,key:k});
     }
   }
   if (!rows.length&&s.price&&+s.price>50) rows.push({label:LABELS[fuel]||fuel,val:+s.price,key:fuel});
@@ -443,18 +480,19 @@ function buildPopup(s) {
     </div>`
   ).join('');
 
+  const mapsUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((s.brand||s.name||'')+ ' ' +(s.address||''))}`;
   const updated=s.price_updated
-    ?`<div style="font-size:.55rem;color:#CBD2D9;margin-top:7px;font-family:ui-monospace,monospace">Updated ${new Date(s.price_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>`
-    :'';
+    ?`<div style="font-size:.55rem;color:#CBD2D9;margin-top:7px;font-family:ui-monospace,monospace">Updated ${new Date(s.price_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</div>`:'';
 
   return `<div style="font-family:ui-monospace,monospace;padding:12px 14px;min-width:190px">
     <div style="font-family:-apple-system,sans-serif;font-weight:800;font-size:.88rem;margin-bottom:1px;color:#1F2933">${s.brand||s.name||'Station'}</div>
-    <div style="font-size:.6rem;color:#7B8794;margin-bottom:8px;line-height:1.4">${s.address||''}</div>
+    <a href="${mapsUrl}" target="_blank" style="font-size:.6rem;color:#7B8794;margin-bottom:8px;line-height:1.4;display:block;text-decoration:none;transition:color .15s" onmouseover="this.style.color='#946C00'" onmouseout="this.style.color='#7B8794'">📍 ${s.address||''} ↗</a>
     ${priceRows||`<div style="color:#CBD2D9;font-size:.68rem">No price data</div>`}
     ${updated}
   </div>`;
 }
 
+// ── RENDER ────────────────────────────────────────────────────────────────────
 function renderResults() {
   const fuel=document.getElementById('fuelSel').value;
   const by=document.getElementById('sortSel').value;
@@ -464,7 +502,20 @@ function renderResults() {
     by==='price'?(getPrice(a,fuel)||999)-(getPrice(b,fuel)||999):(a.distance||999)-(b.distance||999)
   );
 
-  markers.forEach(m=>{ if(m){if(m._labelMarker)map.removeLayer(m._labelMarker);map.removeLayer(m);} });
+  // Find baseline — starred station or nearest
+  const savedId = getBaselineId();
+  let baselineStation = savedId
+    ? allStations.find(s=>s.id===savedId||s.slug===savedId)
+    : null;
+  // Fallback to nearest
+  if (!baselineStation) {
+    baselineStation = [...allStations].sort((a,b)=>(a.distance||999)-(b.distance||999))[0];
+  }
+  const baselinePrice = baselineStation ? getPrice(baselineStation, fuel) : null;
+  const baselineDist  = baselineStation ? parseFloat(baselineStation.distance)||0 : 0;
+
+  // Clear markers
+  markers.forEach(m=>{if(m){if(m._labelMarker)map.removeLayer(m._labelMarker);map.removeLayer(m);}});
   markers=[];
 
   document.getElementById('pillCount').textContent=`${sorted.length} station${sorted.length!==1?'s':''}`;
@@ -481,13 +532,24 @@ function renderResults() {
     const others=fuelPrices.filter(({key})=>key!==fuel)
       .map(({label,val})=>`<div class="orow"><span>${label}</span><span class="oval">${val.toFixed(1)}p</span></div>`).join('');
 
+    const stationId=s.id||s.slug||s.brand+s.address;
+    const isBaseline= baselineStation && (s.id===baselineStation.id||s.slug===baselineStation.slug||(s.brand+s.address===baselineStation.brand+baselineStation.address));
+    const isStarred = getBaselineId() && (s.id===getBaselineId()||s.slug===getBaselineId());
+    const saving = isBaseline ? null : calcSaving(s, baselinePrice, baselineDist);
+
+    const mapsUrl=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((s.brand||s.name||'')+' '+(s.address||''))}`;
+
     const card=document.createElement('div');
-    card.className='card'; card.dataset.i=i;
+    card.className='card'+(isBaseline?' is-baseline':'');
+    card.dataset.i=i;
     card.innerHTML=`
       <div>
-        <div class="c-rank">#${i+1}</div>
-        <div class="c-brand">${s.brand||s.name||'Station'}</div>
-        <div class="c-addr">${s.address||''}</div>
+        <div class="c-rank">#${i+1}${isBaseline?'  <span class="c-baseline-badge">Reference</span>':''}</div>
+        <div class="c-brand">
+          ${s.brand||s.name||'Station'}
+          <button class="c-star${isStarred?' starred':''}" onclick="event.stopPropagation();starStation('${stationId}','${(s.brand||s.name||'').replace(/'/g,"\\'")}',this)" title="Set as reference station">${isStarred?'⭐':'☆'}</button>
+        </div>
+        <a class="c-addr" href="${mapsUrl}" target="_blank" onclick="event.stopPropagation()">📍 ${s.address||''} ↗</a>
         <div class="c-meta">
           ${s.distance!=null?`<span class="c-dist">${(+s.distance).toFixed(1)} mi</span>`:''}
           ${chips}
@@ -498,10 +560,12 @@ function renderResults() {
           ?`<div class="mprice ${cls}">${price.toFixed(1)}</div><span class="punit">p/litre</span>${tag?`<span class="ptag ${tag[0]}">${tag[1]}</span>`:''}`
           :`<div style="color:var(--navy-60);font-size:.7rem;margin-top:4px">—</div>`}
         <div class="others">${others}</div>
+        ${savingBlock(saving, isBaseline, i)}
       </div>`;
     card.addEventListener('click',()=>selectStation(i));
     list.appendChild(card);
 
+    // Marker
     if (s.lat&&s.lng) {
       const mk=L.marker([+s.lat,+s.lng],{icon:mkIcon(price,false)});
       const brand=shortBrand(s);
@@ -509,7 +573,7 @@ function renderResults() {
         const lbl=L.divIcon({
           className:'',
           html:`<div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:8px;color:#1F2933;background:rgba(254,250,236,.92);border:1px solid #F2C94C;padding:1px 4px;border-radius:2px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.12);margin-top:2px">${brand}</div>`,
-          iconSize:[60,16], iconAnchor:[30,0]
+          iconSize:[60,16],iconAnchor:[30,0]
         });
         const lm=L.marker([+s.lat,+s.lng],{icon:lbl,interactive:false,zIndexOffset:-100});
         lm.addTo(map); mk._labelMarker=lm;
@@ -523,6 +587,20 @@ function renderResults() {
   openDrawer();
 }
 
+function starStation(id, name, btn) {
+  const currentId = getBaselineId();
+  // Toggle off if already starred
+  if (currentId===id) {
+    clearBaseline();
+    btn.textContent='☆'; btn.classList.remove('starred');
+  } else {
+    setBaseline(id, name);
+    // Update all star buttons
+    document.querySelectorAll('.c-star').forEach(b=>{ b.textContent='☆'; b.classList.remove('starred'); });
+    btn.textContent='⭐'; btn.classList.add('starred');
+  }
+}
+
 function selectStation(i) {
   document.querySelectorAll('.card').forEach((c,idx)=>c.classList.toggle('on',idx===i));
   const fuel=document.getElementById('fuelSel').value;
@@ -533,6 +611,7 @@ function selectStation(i) {
   closePanel();
 }
 
+// ── GEOCODING ─────────────────────────────────────────────────────────────────
 async function resolvePostcode(raw) {
   const q=raw.trim().toUpperCase(), s=q.replace(/\s+/g,'');
   const candidates=new Set();
@@ -546,7 +625,7 @@ async function resolvePostcode(raw) {
     } catch(_){}
   }
   try {
-    const r=await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(s)}&countrycodes=gb&format=json&limit=1`,{headers:{'Accept-Language':'en','User-Agent':'PumpCheck/1.0'}});
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(s)}&countrycodes=gb&format=json&limit=1`,{headers:{'Accept-Language':'en','User-Agent':'ExpensivePetroleum/1.0'}});
     const d=await r.json();
     if (d?.length) return {lat:parseFloat(d[0].lat),lng:parseFloat(d[0].lon)};
   } catch(_){}
@@ -563,6 +642,7 @@ async function resolvePostcode(raw) {
   throw new Error(`"${q}" not found. Please check the postcode.`);
 }
 
+// ── SEARCH ────────────────────────────────────────────────────────────────────
 async function doSearch(oLat, oLng) {
   hideErr(); showLoading(true);
   allStations=[]; sorted=[];
@@ -572,7 +652,10 @@ async function doSearch(oLat, oLng) {
   document.getElementById('resultsPill').classList.remove('show');
   try {
     let lat=oLat, lng=oLng;
-    if (lat==null) {const loc=await resolvePostcode(document.getElementById('pcInput').value);lat=loc.lat;lng=loc.lng;}
+    if (lat==null) {
+      const loc=await resolvePostcode(document.getElementById('pcInput').value);
+      lat=loc.lat; lng=loc.lng;
+    }
     const fuel=document.getElementById('fuelSel').value;
     const radius=document.getElementById('radSel').value;
     const url=`/.netlify/functions/stations?lat=${lat}&lng=${lng}&fuel=${fuel}&radius=${radius}`;
@@ -601,13 +684,35 @@ function useGPS() {
   );
 }
 
+// ── UI ────────────────────────────────────────────────────────────────────────
 function togglePanel(){panelOpen?closePanel():openPanel();}
-function openPanel(){document.getElementById('panel').classList.add('open');document.getElementById('fab').classList.add('open');document.getElementById('fab').querySelector('span').textContent='✕';panelOpen=true;}
-function closePanel(){document.getElementById('panel').classList.remove('open');document.getElementById('fab').classList.remove('open');document.getElementById('fab').querySelector('span').textContent='⛽';panelOpen=false;}
+function openPanel(){
+  closeSettings();
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('fab').classList.add('open');
+  document.getElementById('fab').querySelector('span').textContent='✕';
+  panelOpen=true;
+}
+function closePanel(){
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('fab').classList.remove('open');
+  document.getElementById('fab').querySelector('span').textContent='⛽';
+  panelOpen=false;
+}
 function openDrawer(){document.getElementById('drawer').classList.add('open');drawerOpen=true;}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');drawerOpen=false;}
 function toggleDrawer(){drawerOpen?closeDrawer():openDrawer();}
-
+function toggleSettings(){settingsOpen?closeSettings():openSettings();}
+function openSettings(){
+  closePanel();
+  initSettingsPanel();
+  document.getElementById('settingsPanel').classList.add('open');
+  settingsOpen=true;
+}
+function closeSettings(){
+  document.getElementById('settingsPanel').classList.remove('open');
+  settingsOpen=false;
+}
 function showLoading(on){
   document.getElementById('loadingOverlay').classList.toggle('show',on);
   document.getElementById('btnSearch').disabled=on;
@@ -618,8 +723,18 @@ function hideErr(){document.getElementById('errMsg').style.display='none';}
 function onPcInput(el){document.getElementById('pcClear').classList.toggle('show',el.value.length>0);}
 function clearPc(){document.getElementById('pcInput').value='';document.getElementById('pcClear').classList.remove('show');document.getElementById('pcInput').focus();}
 
+function toggleSavingDetail(idx) {
+  const el = document.getElementById(`sd-${idx}`);
+  if (!el) return;
+  el.classList.toggle('open');
+  // Update arrow
+  const block = el.previousElementSibling;
+  const label = block?.querySelector('.saving-label');
+  if (label) label.textContent = label.textContent.replace('▾','▸').replace('▸', el.classList.contains('open') ? '▴' : '▾');
+}
+
 document.getElementById('pcInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();doSearch();}});
-map.on('click',()=>{if(panelOpen)closePanel();});
+map.on('click',()=>{if(panelOpen)closePanel();if(settingsOpen)closeSettings();});
 window.addEventListener('load',()=>setTimeout(openPanel,400));
 </script>
 </body>
