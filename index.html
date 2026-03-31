@@ -104,7 +104,7 @@ select.pill-sort:focus{border-color:var(--amber)}
 .c-meta{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .c-dist{font-family:var(--mono);font-size:.55rem;background:var(--navy-10);border:1px solid var(--border);color:var(--navy-60);padding:2px 5px;border-radius:2px}
 .c-chip{font-family:var(--mono);font-size:.53rem;padding:2px 5px;border-radius:2px;border:1px solid var(--amber-border);color:var(--amber-text);background:var(--amber-bg)}
-.c-baseline-badge{font-family:var(--mono);font-size:.52rem;font-weight:700;background:var(--amber);color:var(--navy);padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em}
+.c-baseline-badge{font-family:var(--mono);font-size:.52rem;font-weight:700;background:var(--amber);color:var(--navy);padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em;display:inline-block;vertical-align:middle;margin-left:4px}
 .pcol{text-align:right}
 .mprice{font-family:var(--sans);font-weight:800;font-size:1.25rem;line-height:1}
 .cheap{color:var(--cheap)}.mid{color:var(--mid)}.pricey{color:var(--pricey)}
@@ -123,12 +123,12 @@ select.pill-sort:focus{border-color:var(--amber)}
 .saving-block.small-saving{background:#fef9c3;border-color:#fde047}
 .saving-block.not-worth{background:#fee2e2;border-color:#fca5a5}
 .saving-block.is-ref{background:var(--amber-bg);border-color:var(--amber-border);cursor:default}
-.saving-amount{font-family:var(--sans);font-weight:800;font-size:.8rem;flex-shrink:0}
+.saving-amount{font-family:var(--mono);font-weight:700;font-size:.72rem;flex-shrink:0}
 .saving-amount.worth-it{color:#15803d}.saving-amount.small-saving{color:#a16207}
 .saving-amount.not-worth{color:#dc2626}.saving-amount.is-ref{color:var(--amber-text)}
-.saving-verdict{font-family:var(--mono);font-size:.52rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;flex:1;text-align:right}
+.saving-verdict{font-family:var(--mono);font-size:.62rem;font-weight:500;flex:1;text-align:right;color:var(--navy-60)}
 .saving-verdict.worth-it{color:#15803d}.saving-verdict.small-saving{color:#a16207}
-.saving-verdict.not-worth{color:#dc2626}.saving-verdict.is-ref{color:var(--amber-text)}
+.saving-verdict.not-worth{color:#dc2626}.saving-verdict.is-ref{color:var(--amber-text);font-size:.58rem}
 .saving-detail{font-family:var(--mono);font-size:.55rem;color:var(--navy-60);margin-top:4px;padding:5px 7px;line-height:1.6;border-top:1px solid var(--border);display:none;background:var(--navy-10);border-radius:0 0 3px 3px}
 .saving-detail.open{display:block}
 
@@ -384,7 +384,7 @@ function calcSaving(s, baselinePrice, baselineDist) {
 }
 function savingBlock(saving, isBaseline, idx) {
   if (isBaseline) {
-    return '<div class="saving-block is-ref"><span class="saving-amount is-ref">⭐ Reference</span><span class="saving-verdict is-ref">Your comparison point</span></div>';
+    return '<div class="saving-block is-ref"><span class="saving-amount is-ref">⭐ Comparing from here</span><span class="saving-verdict is-ref">All savings measured against this station</span></div>';
   }
   if (!saving) return '';
   const { netSaving, grossSaving, driveCost, extraMiles } = saving;
@@ -442,6 +442,8 @@ function buildPopup(s) {
     if (src[k] && +src[k] > 50 && +src[k] < 400) rows.push({ label, val:+src[k], key:k });
   }
   if (!rows.length && s.price && +s.price > 50) rows.push({ label: LABELS[fuel]||fuel, val:+s.price, key:fuel });
+  const stationId = s.id || s.slug || (s.brand + s.address);
+  const isStarred = getBaselineId() === stationId || getBaselineId() === s.id || getBaselineId() === s.slug;
   const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.brand||s.name||'') + ' ' + (s.address||''));
   const priceRows = rows.map(function(r) {
     return '<div style="display:flex;justify-content:space-between;gap:14px;padding:4px 0;border-bottom:1px solid #E4E7EB;font-size:.72rem">'
@@ -452,11 +454,18 @@ function buildPopup(s) {
   const updated = s.price_updated
     ? '<div style="font-size:.55rem;color:#CBD2D9;margin-top:7px;font-family:ui-monospace,monospace">Updated ' + new Date(s.price_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + '</div>'
     : '';
-  return '<div style="font-family:ui-monospace,monospace;padding:12px 14px;min-width:190px">'
+  const starLabel = isStarred ? '⭐ Comparing from here' : '☆ Compare savings from here';
+  const starStyle = isStarred
+    ? 'margin-top:10px;width:100%;padding:7px;border-radius:3px;border:1.5px solid #F2C94C;background:#FEFAEC;color:#946C00;font-family:ui-monospace,monospace;font-size:.65rem;font-weight:700;cursor:pointer;text-align:center'
+    : 'margin-top:10px;width:100%;padding:7px;border-radius:3px;border:1.5px solid #E4E7EB;background:#F5F6F7;color:#7B8794;font-family:ui-monospace,monospace;font-size:.65rem;font-weight:600;cursor:pointer;text-align:center';
+  const starBtn = '<button style="' + starStyle + '" onclick="popupStar(\'' + stationId.replace(/'/g,"\\'") + '\',\'' + (s.brand||s.name||'').replace(/'/g,"\\'") + '\',this)">' + starLabel + '</button>';
+  return '<div style="font-family:ui-monospace,monospace;padding:12px 14px;min-width:200px">'
     + '<div style="font-family:-apple-system,sans-serif;font-weight:800;font-size:.88rem;margin-bottom:1px;color:#1F2933">' + (s.brand||s.name||'Station') + '</div>'
     + '<a href="' + mapsUrl + '" target="_blank" style="font-size:.6rem;color:#7B8794;margin-bottom:8px;line-height:1.4;display:block;text-decoration:none" onmouseover="this.style.color=\'#946C00\'" onmouseout="this.style.color=\'#7B8794\'">📍 ' + (s.address||'') + ' ↗</a>'
     + (priceRows || '<div style="color:#CBD2D9;font-size:.68rem">No price data</div>')
-    + updated + '</div>';
+    + updated
+    + starBtn
+    + '</div>';
 }
 
 // RENDER
@@ -567,6 +576,24 @@ function renderResults() {
   });
 
   openDrawer();
+}
+
+function popupStar(id, name, btn) {
+  if (getBaselineId() === id) {
+    clearBaseline();
+    btn.textContent = '☆ Compare savings from here';
+    btn.style.background = '#F5F6F7';
+    btn.style.color = '#7B8794';
+    btn.style.borderColor = '#E4E7EB';
+  } else {
+    setBaseline(id, name);
+    btn.textContent = '⭐ Comparing from here';
+    btn.style.background = '#FEFAEC';
+    btn.style.color = '#946C00';
+    btn.style.borderColor = '#F2C94C';
+    // Update card stars too
+    document.querySelectorAll('.c-star').forEach(function(b) { b.textContent='☆'; b.classList.remove('starred'); });
+  }
 }
 
 function starStation(id, name, btn) {
