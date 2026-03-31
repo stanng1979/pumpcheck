@@ -729,6 +729,11 @@ function toggleDrawer(){drawerOpen?closeDrawer():openDrawer();}
   document.getElementById('btnSearch').disabled=on;
   document.getElementById('btnSearch').textContent=on?'…':'Search';
 }
+function showLoading(on){
+  document.getElementById('loadingOverlay').classList.toggle('show',on);
+  document.getElementById('btnSearch').disabled=on;
+  document.getElementById('btnSearch').textContent=on?'…':'Search';
+}
 function showErr(m){const e=document.getElementById('errMsg');e.textContent='⚠ '+m;e.style.display='block';if(!panelOpen)openPanel();}
 function hideErr(){document.getElementById('errMsg').style.display='none';}
 function onPcInput(el){document.getElementById('pcClear').classList.toggle('show',el.value.length>0);}
