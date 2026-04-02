@@ -144,7 +144,13 @@ select.pill-sort:focus{border-color:var(--amber)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-label{font-family:var(--mono);color:var(--amber);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase}
 
-/* POPUP */
+/* NO FUEL REPORT */
+.no-fuel-btn{background:none;border:1px solid var(--border);color:var(--navy-60);font-family:var(--mono);font-size:.55rem;padding:2px 6px;border-radius:2px;cursor:pointer;margin-top:4px;transition:all .15s;display:inline-block}
+.no-fuel-btn:hover{border-color:#dc2626;color:#dc2626;background:#fee2e2}
+.no-fuel-btn.reported{border-color:#dc2626;color:#dc2626;background:#fee2e2;cursor:default}
+.no-fuel-warning{display:flex;align-items:center;gap:4px;margin-top:4px;padding:3px 7px;background:#fee2e2;border:1.5px solid #fca5a5;border-left:3px solid #dc2626;border-radius:3px;font-family:var(--mono);font-size:.6rem;color:#dc2626;font-weight:700}
+
+/* POPUP NO FUEL */
 .leaflet-popup-content-wrapper{border-radius:3px !important;font-family:var(--mono) !important;box-shadow:0 4px 20px rgba(31,41,51,.2) !important;border-top:3px solid var(--amber) !important;padding:0 !important}
 .leaflet-popup-content{margin:0 !important}
 .leaflet-popup-close-button{top:8px !important;right:10px !important;color:var(--navy-60) !important}
@@ -291,7 +297,42 @@ L.control.zoom({position:'topright'}).addTo(map);
 // STATE
 let allStations = [], sorted = [], markers = [], circle = null;
 let panelOpen = false, drawerOpen = false;
-let lastSearchLabel = ''; // what user typed as postcode
+let lastSearchLabel = '';
+let noFuelReports = {}; // stationId -> { count, minutesAgo }
+
+// NO FUEL REPORTS
+function stationId(s) {
+  return s.id || s.slug || (s.brand + s.address).replace(/\s+/g,'').toLowerCase();
+}
+
+async function loadReports(stations) {
+  try {
+    const ids = stations.map(stationId).join(',');
+    const r   = await fetch('/.netlify/functions/get-reports?ids=' + encodeURIComponent(ids));
+    if (r.ok) noFuelReports = await r.json();
+  } catch(_) {
+    noFuelReports = {};
+  }
+}
+
+async function reportNoFuel(sid, name, btn) {
+  btn.textContent = '⚠️ Reporting…';
+  btn.classList.add('reported');
+  try {
+    await fetch('/.netlify/functions/report-no-fuel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stationId: sid, stationName: name })
+    });
+    btn.textContent = '⚠️ Reported — thanks';
+    // Update local state immediately
+    noFuelReports[sid] = { count: (noFuelReports[sid]?.count || 0) + 1, minutesAgo: 0 };
+    renderResults();
+  } catch(_) {
+    btn.textContent = '⚠️ Report no fuel';
+    btn.classList.remove('reported');
+  }
+} // what user typed as postcode
 
 // SETTINGS
 function getSettings() {
@@ -539,6 +580,8 @@ function buildPopup(s, isNearest) {
     if (src[k] && +src[k] > 50 && +src[k] < 400) rows.push({ label, val:+src[k], key:k });
   }
   if (!rows.length && s.price && +s.price > 50) rows.push({ label: LABELS[fuel]||fuel, val:+s.price, key:fuel });
+  const sid     = stationId(s);
+  const report  = noFuelReports[sid];
   const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.brand||s.name||'') + ' ' + (s.address||''));
   const priceRows = rows.map(function(r) {
     return '<div style="display:flex;justify-content:space-between;gap:14px;padding:4px 0;border-bottom:1px solid #E4E7EB;font-size:.72rem">'
@@ -550,14 +593,22 @@ function buildPopup(s, isNearest) {
     ? '<div style="font-size:.55rem;color:#CBD2D9;margin-top:7px;font-family:ui-monospace,monospace">Updated ' + new Date(s.price_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + '</div>'
     : '';
   const nearestBar = isNearest
-    ? '<div style="margin-top:9px;padding:5px 8px;background:#FEFAEC;border:1.5px solid #F2C94C;border-radius:3px;font-family:ui-monospace,monospace;font-size:.62rem;color:#946C00;font-weight:700">📍 Nearest to ' + (lastSearchLabel||'your postcode') + ' — detour savings on other stations are measured from here</div>'
+    ? '<div style="margin-top:9px;padding:5px 8px;background:#FEFAEC;border:1.5px solid #F2C94C;border-radius:3px;font-family:ui-monospace,monospace;font-size:.62rem;color:#946C00;font-weight:700">📍 Nearest to ' + (lastSearchLabel||'your postcode') + ' — detour savings measured from here</div>'
     : '';
-  return '<div style="font-family:ui-monospace,monospace;padding:12px 14px;min-width:200px">'
+  const noFuelBar = report
+    ? '<div style="margin-top:7px;padding:5px 8px;background:#fee2e2;border:1.5px solid #fca5a5;border-left:3px solid #dc2626;border-radius:3px;font-family:ui-monospace,monospace;font-size:.62rem;color:#dc2626;font-weight:700">⚠️ No fuel reported ' + report.minutesAgo + ' min ago (' + report.count + ' report' + (report.count > 1 ? 's' : '') + ')</div>'
+    : '';
+  const reportBtnHtml = report
+    ? '<div style="margin-top:6px;font-family:ui-monospace,monospace;font-size:.6rem;color:#fca5a5;text-align:center">Already reported — expires in ' + (120 - report.minutesAgo) + ' min</div>'
+    : '<button onclick="reportNoFuel(\'' + sid.replace(/'/g,"\\'") + '\',\'' + (s.brand||s.name||'').replace(/'/g,"\\'") + '\',this)" style="margin-top:8px;width:100%;padding:6px;border-radius:3px;border:1px solid #E4E7EB;background:#F5F6F7;color:#7B8794;font-family:ui-monospace,monospace;font-size:.62rem;cursor:pointer;display:block">⚠️ Report no fuel here</button>';
+  return '<div style="font-family:ui-monospace,monospace;padding:12px 14px;min-width:210px">'
     + '<div style="font-family:-apple-system,sans-serif;font-weight:800;font-size:.88rem;margin-bottom:1px;color:#1F2933">' + (s.brand||s.name||'Station') + '</div>'
     + '<a href="' + mapsUrl + '" target="_blank" style="font-size:.6rem;color:#7B8794;margin-bottom:8px;line-height:1.4;display:block;text-decoration:none" onmouseover="this.style.color=\'#946C00\'" onmouseout="this.style.color=\'#7B8794\'">📍 ' + (s.address||'') + ' ↗</a>'
     + (priceRows || '<div style="color:#CBD2D9;font-size:.68rem">No price data</div>')
     + updated
+    + noFuelBar
     + nearestBar
+    + reportBtnHtml
     + '</div>';
 }
 
@@ -599,13 +650,21 @@ function renderResults() {
     const cls        = pCls(price);
     const tag        = pTag(price, prices);
     const fuelPrices = getAllFuelPrices(s);
-    const sid        = s.id || s.slug || (s.brand + s.address);
+    const sid        = stationId(s);
     const isNearest  = sid === nearestId;
     const saving     = isNearest ? null : calcSaving(s, nearestPrice, nearestDist);
+    const report     = noFuelReports[sid];
     const mapsUrl    = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.brand||s.name||'') + ' ' + (s.address||''));
     const chips      = fuelPrices.map(function(f) { return '<span class="c-chip">' + f.label + '</span>'; }).join('');
     const others     = fuelPrices.filter(function(f) { return f.key !== fuel; })
       .map(function(f) { return '<div class="orow"><span>' + f.label + '</span><span class="oval">' + f.val.toFixed(1) + 'p</span></div>'; }).join('');
+
+    const noFuelWarning = report
+      ? '<div class="no-fuel-warning">⚠️ No fuel reported ' + report.minutesAgo + ' min ago (' + report.count + ' report' + (report.count > 1 ? 's' : '') + ')</div>'
+      : '';
+    const reportBtn = report
+      ? '<button class="no-fuel-btn reported" disabled>⚠️ Already reported</button>'
+      : '<button class="no-fuel-btn" onclick="event.stopPropagation();reportNoFuel(\'' + sid.replace(/'/g,"\\'") + '\',\'' + (s.brand||s.name||'').replace(/'/g,"\\'") + '\',this)">⚠️ Report no fuel here</button>';
 
     const card = document.createElement('div');
     card.className = 'card';
@@ -619,6 +678,8 @@ function renderResults() {
         + (s.distance != null ? '<span class="c-dist">' + (+s.distance).toFixed(1) + ' mi</span>' : '')
         + chips
       + '</div>'
+      + noFuelWarning
+      + reportBtn
       + '</div>'
       + '<div class="pcol">'
         + (price
@@ -729,6 +790,7 @@ async function doSearch(oLat, oLng) {
     var list = (raw.stations || raw || []).filter(function(s) { return s && s.lat && s.lng; });
     if (!list.length) throw new Error('No stations found within ' + radius + ' miles. Try a wider radius.');
     allStations = list;
+    await loadReports(list);
     circle = L.circle([lat, lng], { radius: +radius*1609.34, color:'#F2C94C', weight:1.5, opacity:.4, fillColor:'#F2C94C', fillOpacity:.04 }).addTo(map);
     map.setView([lat, lng], +radius<=3?13:+radius<=5?12:+radius<=10?11:10, {animate:true});
     renderResults();
