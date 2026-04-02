@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Expensive Petroleum 🪄</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%231F2933'/><text x='16' y='23' font-size='20' text-anchor='middle' font-family='Apple Color Emoji,Segoe UI Emoji,sans-serif'>⛽</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231F2933'/><text x='90' y='130' font-size='110' text-anchor='middle' font-family='Apple Color Emoji,Segoe UI Emoji,sans-serif'>⛽</text></svg>">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --navy:#1F2933; --navy-60:#7B8794; --navy-30:#CBD2D9; --navy-10:#F5F6F7;
+  --white:#ffffff; --amber:#F2C94C; --amber-text:#946C00;
+  --amber-bg:#FEFAEC; --amber-border:#F2C94C; --border:#E4E7EB;
+  --cheap:#16a34a; --mid:#b45309; --pricey:#dc2626;
+  --mono:ui-monospace,'SF Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;width:100%;overflow:hidden}
+body{font-family:var(--mono);background:var(--navy-10);color:var(--navy);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+#map{position:fixed;inset:0;z-index:0}
+
+/* FAB */
+.fab{position:fixed;bottom:24px;right:20px;z-index:1000;width:54px;height:54px;border-radius:50%;background:var(--navy);border:3px solid var(--amber);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.35rem;box-shadow:0 4px 16px rgba(31,41,51,.35);transition:transform .18s}
+.fab:hover{transform:scale(1.07)}.fab:active{transform:scale(.94)}
+.fab-dot{position:absolute;top:4px;right:4px;width:9px;height:9px;background:var(--amber);border-radius:50%;border:2px solid var(--navy);animation:blink 2s ease-in-out infinite}
+.fab.open .fab-dot{display:none}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* PANEL */
+.panel{position:fixed;bottom:90px;right:16px;z-index:999;width:min(360px,calc(100vw - 32px));background:var(--white);border:2px solid var(--border);border-top:3px solid var(--amber);border-radius:3px;box-shadow:0 8px 28px rgba(31,41,51,.18);overflow:hidden;transform:scale(.87) translateY(14px);opacity:0;pointer-events:none;transition:transform .22s cubic-bezier(.34,1.4,.64,1),opacity .18s;transform-origin:bottom right;display:flex;flex-direction:column;max-height:82vh}
+.panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+.panel-head{background:var(--navy);border-bottom:3px solid var(--amber);padding:11px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-logo{font-family:var(--sans);font-weight:800;font-size:.88rem;color:var(--white);letter-spacing:1.5px;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.panel-logo-dot{width:7px;height:7px;background:var(--amber);border-radius:50%;animation:blink 2s ease-in-out infinite}
+.live-pill{font-family:var(--mono);font-size:.5rem;color:rgba(255,255,255,.4);font-style:italic;max-width:140px;text-align:right;line-height:1.3}
+
+/* TABS */
+.tab-bar{display:flex;border-bottom:1.5px solid var(--border);background:var(--navy-10);flex-shrink:0}
+.tab{flex:1;background:none;border:none;border-bottom:3px solid transparent;padding:9px 12px;font-family:var(--mono);font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--navy-60);cursor:pointer;transition:color .15s,border-color .15s;margin-bottom:-1.5px}
+.tab:hover{color:var(--navy)}
+.tab.active{color:var(--amber-text);border-bottom-color:var(--amber);background:var(--white)}
+.tab-content{overflow-y:auto;flex:1}
+
+/* PANEL BODY */
+.panel-body{padding:13px;display:flex;flex-direction:column;gap:9px}
+.pc-row{display:flex;gap:7px;align-items:stretch}
+.pc-wrap{position:relative;flex:1}
+.pc-input{width:100%;background:var(--navy-10);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.82rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:10px 32px 10px 11px;border-radius:3px;outline:none;transition:border-color .15s,background .15s}
+.pc-input::placeholder{text-transform:none;font-weight:400;font-size:.7rem;letter-spacing:0;color:var(--navy-60)}
+.pc-input:focus{border-color:var(--amber);background:var(--white)}
+.pc-clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--navy-60);font-size:.82rem;cursor:pointer;padding:2px;display:none;line-height:1}
+.pc-clear.show{display:block}
+.gps-btn{background:var(--navy);border:1.5px solid var(--amber);color:var(--amber);font-size:1rem;padding:0 13px;border-radius:3px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,color .15s}
+.gps-btn:hover{background:var(--amber);color:var(--navy)}
+.ctrl-row{display:flex;gap:7px;align-items:stretch}
+select.ctl{flex:1;background:var(--navy-10);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.7rem;padding:9px 7px;border-radius:3px;outline:none;cursor:pointer;min-width:0}
+select.ctl:focus{border-color:var(--amber)}
+.search-btn{background:var(--amber);color:var(--navy);border:none;font-family:var(--sans);font-weight:800;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;padding:9px 16px;border-radius:3px;cursor:pointer;transition:opacity .15s;white-space:nowrap;flex-shrink:0}
+.search-btn:hover{opacity:.88}.search-btn:disabled{opacity:.35;cursor:not-allowed}
+.err-msg{background:#fee2e2;color:#dc2626;border:1.5px solid #fca5a5;border-left:3px solid #dc2626;padding:7px 10px;border-radius:3px;font-size:.68rem;line-height:1.5;display:none}
+.results-pill{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-left:3px solid var(--amber);border-radius:3px;padding:5px 10px;display:none;align-items:center;gap:6px}
+.results-pill.show{display:flex}
+.pill-count{font-family:var(--mono);font-weight:700;font-size:.65rem;color:var(--amber-text);text-transform:uppercase;letter-spacing:.08em}
+
+/* SETTINGS */
+.setting-row{display:flex;flex-direction:column;gap:6px;padding-bottom:13px;border-bottom:1px solid var(--border)}
+.setting-row:last-of-type{border-bottom:none;padding-bottom:0}
+.setting-label{font-family:var(--mono);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--amber-text)}
+.setting-desc{font-size:.67rem;color:var(--navy-60);line-height:1.65}
+.setting-desc strong{color:var(--navy);font-weight:700}
+.setting-desc code{background:var(--navy-10);border:1px solid var(--border);padding:1px 5px;border-radius:2px;font-family:var(--mono);font-size:.62rem;color:var(--navy)}
+.setting-input-row{display:flex;align-items:center;gap:8px;margin-top:2px}
+.setting-input{background:var(--navy-10);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.82rem;font-weight:600;padding:8px 10px;border-radius:3px;outline:none;width:90px;transition:border-color .15s}
+.setting-input:focus{border-color:var(--amber)}
+.setting-unit{font-size:.68rem;color:var(--navy-60)}
+.setting-save{background:var(--amber);color:var(--navy);border:none;font-family:var(--sans);font-weight:800;font-size:.72rem;letter-spacing:.04em;text-transform:uppercase;padding:10px;border-radius:3px;cursor:pointer;width:100%;transition:opacity .15s;margin-top:4px}
+.setting-save:hover{opacity:.88}
+.example-box{background:var(--navy-10);border:1.5px solid var(--border);border-left:3px solid var(--amber);border-radius:3px;padding:9px 11px;font-size:.65rem;color:var(--navy-60);line-height:1.7;margin-top:4px}
+.example-box strong{color:var(--navy)}
+.example-box .result{color:var(--amber-text);font-weight:700}
+
+/* DRAWER */
+.drawer{position:fixed;bottom:0;left:0;right:0;z-index:997;background:var(--white);border-top:3px solid var(--amber);box-shadow:0 -4px 20px rgba(31,41,51,.14);transform:translateY(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);height:42vh;display:flex;flex-direction:column}
+.drawer.open{transform:translateY(0)}
+.drawer-header{padding:8px 14px 7px;border-bottom:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;background:var(--navy-10)}
+.drawer-title{font-family:var(--mono);font-weight:700;font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--amber-text)}
+.drawer-close{background:none;border:none;font-size:.95rem;color:var(--navy-60);cursor:pointer;padding:2px 6px;border-radius:2px}
+.drawer-close:hover{background:var(--border)}
+select.pill-sort{background:var(--white);border:1.5px solid var(--border);color:var(--navy);font-family:var(--mono);font-size:.62rem;padding:4px 7px;border-radius:3px;outline:none;cursor:pointer}
+select.pill-sort:focus{border-color:var(--amber)}
+.drawer-list{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+
+/* CARDS */
+.card{padding:10px 14px;border-bottom:1.5px solid var(--border);cursor:pointer;transition:background .1s;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
+.card:hover{background:var(--amber-bg)}.card.on{background:var(--amber-bg);border-left:3px solid var(--amber);padding-left:11px}
+.c-rank{font-family:var(--mono);font-size:.55rem;color:var(--amber-text);margin-bottom:2px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;display:flex;align-items:center;gap:5px}
+.c-nearest-badge{font-family:var(--mono);font-size:.52rem;font-weight:700;background:var(--amber);color:var(--navy);padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.04em}
+.c-brand{font-family:var(--sans);font-weight:700;font-size:.82rem;margin-bottom:1px;color:var(--navy)}
+.c-addr{font-size:.62rem;color:var(--navy-60);line-height:1.4;margin-bottom:4px;text-decoration:none;display:block;transition:color .15s}
+.c-addr:hover{color:var(--amber-text);text-decoration:underline}
+.c-meta{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.c-dist{font-family:var(--mono);font-size:.55rem;background:var(--navy-10);border:1px solid var(--border);color:var(--navy-60);padding:2px 5px;border-radius:2px}
+.c-chip{font-family:var(--mono);font-size:.53rem;padding:2px 5px;border-radius:2px;border:1px solid var(--amber-border);color:var(--amber-text);background:var(--amber-bg)}
+.pcol{text-align:right}
+.mprice{font-family:var(--sans);font-weight:800;font-size:1.25rem;line-height:1}
+.cheap{color:var(--cheap)}.mid{color:var(--mid)}.pricey{color:var(--pricey)}
+.punit{font-family:var(--mono);font-size:.53rem;color:var(--navy-60);display:block;margin:2px 0 2px}
+.ptag{font-family:var(--mono);font-size:.52rem;font-weight:700;padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.05em;display:inline-block;margin-bottom:4px}
+.tag-cheap{background:#dcfce7;color:#15803d;border:1px solid #86efac}
+.tag-mid{background:#fde68a;color:#92400e;border:1px solid #fbbf24}
+.tag-pricey{background:#fee2e2;color:#dc2626;border:1px solid #fca5a5}
+.others{margin-top:3px}
+.orow{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.53rem;color:var(--navy-60);gap:5px;margin-top:1px}
+.oval{font-weight:600;color:var(--navy)}
+
+/* SAVING BADGE */
+.saving-block{margin-top:5px;padding:5px 8px;border-radius:3px;border:1.5px solid;display:flex;flex-direction:column;gap:2px;cursor:pointer;transition:opacity .15s}
+.saving-block:hover{opacity:.85}
+.saving-block.worth-it{background:#dcfce7;border-color:#86efac}
+.saving-block.small-saving{background:#fef9c3;border-color:#fde047}
+.saving-block.not-worth{background:#fee2e2;border-color:#fca5a5}
+.saving-block.is-nearest{background:var(--amber-bg);border-color:var(--amber-border);cursor:default}
+.saving-block.is-nearest:hover{opacity:1}
+.saving-amount{font-family:var(--mono);font-weight:700;font-size:.7rem}
+.saving-amount.worth-it{color:#15803d}.saving-amount.small-saving{color:#a16207}
+.saving-amount.not-worth{color:#dc2626}.saving-amount.is-nearest{color:var(--amber-text)}
+.saving-verdict{font-family:var(--mono);font-size:.7rem;font-weight:600}
+.saving-verdict.worth-it{color:#15803d}
+.saving-verdict.small-saving{color:#a16207}
+.saving-verdict.not-worth{color:#dc2626}
+.saving-verdict.is-nearest{color:var(--amber-text)}
+.saving-detail{font-family:var(--mono);font-size:.58rem;color:var(--navy-60);margin-top:4px;padding:6px 8px;line-height:1.7;border-top:1px solid var(--border);display:none;background:var(--navy-10);border-radius:0 0 3px 3px}
+.saving-detail.open{display:block}
+
+/* LOADING */
+.loading-overlay{position:fixed;inset:0;z-index:2000;background:rgba(31,41,51,.65);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.loading-overlay.show{display:flex}
+.spin-ring{width:34px;height:34px;border:3px solid rgba(242,201,76,.2);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-label{font-family:var(--mono);color:var(--amber);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase}
+
+/* NO FUEL REPORT */
+.no-fuel-btn{background:none;border:1px solid var(--border);color:var(--navy-60);font-family:var(--mono);font-size:.55rem;padding:2px 6px;border-radius:2px;cursor:pointer;margin-top:4px;transition:all .15s;display:inline-block}
+.no-fuel-btn:hover{border-color:#dc2626;color:#dc2626;background:#fee2e2}
+.no-fuel-btn.reported{border-color:#dc2626;color:#dc2626;background:#fee2e2;cursor:default}
+.no-fuel-warning{display:flex;align-items:center;gap:4px;margin-top:4px;padding:3px 7px;background:#fee2e2;border:1.5px solid #fca5a5;border-left:3px solid #dc2626;border-radius:3px;font-family:var(--mono);font-size:.6rem;color:#dc2626;font-weight:700}
+
+/* POPUP NO FUEL */
+.leaflet-popup-content-wrapper{border-radius:3px !important;font-family:var(--mono) !important;box-shadow:0 4px 20px rgba(31,41,51,.2) !important;border-top:3px solid var(--amber) !important;padding:0 !important}
+.leaflet-popup-content{margin:0 !important}
+.leaflet-popup-close-button{top:8px !important;right:10px !important;color:var(--navy-60) !important}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spin-ring"></div>
+  <div class="loading-label">Finding stations…</div>
+</div>
+
+<button class="fab" id="fab" onclick="togglePanel()">
+  <span>⛽</span>
+  <div class="fab-dot"></div>
+</button>
+
+<div class="panel" id="panel">
+  <div class="panel-head">
+    <div class="panel-logo"><div class="panel-logo-dot"></div><span>🪄 Expensive<br>Petroleum</span></div>
+    <div class="live-pill">"Expensive Petroleum"<br>— Ron Weasley</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab active" id="tab-search" onclick="switchTab('search')">⛽ Search</button>
+    <button class="tab" id="tab-settings" onclick="switchTab('settings')">⚙️ Settings</button>
+  </div>
+
+  <!-- Search tab -->
+  <div class="tab-content" id="tabSearch">
+    <div class="panel-body">
+      <div class="pc-row">
+        <div class="pc-wrap">
+          <input class="pc-input" id="pcInput" placeholder="Enter postcode e.g. SW1A 2AA"
+            maxlength="10" autocorrect="off" autocapitalize="characters"
+            spellcheck="false" autocomplete="postal-code" oninput="onPcInput(this)"/>
+          <button class="pc-clear" id="pcClear" onclick="clearPc()">✕</button>
+        </div>
+        <button class="gps-btn" onclick="useGPS()" title="Use my current location">📍</button>
+      </div>
+      <div class="ctrl-row">
+        <select class="ctl" id="fuelSel">
+          <option value="E10">Petrol (E10)</option>
+          <option value="E5">Super (E5)</option>
+          <option value="B7">Diesel (B7)</option>
+          <option value="SDV">Super Diesel</option>
+        </select>
+        <select class="ctl" id="radSel">
+          <option value="3">3 mi</option>
+          <option value="5" selected>5 mi</option>
+          <option value="10">10 mi</option>
+          <option value="20">20 mi</option>
+        </select>
+        <button class="search-btn" id="btnSearch" onclick="doSearch()">Search</button>
+      </div>
+      <div class="err-msg" id="errMsg"></div>
+      <div class="results-pill" id="resultsPill">
+        <span class="pill-count" id="pillCount"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings tab -->
+  <div class="tab-content" id="tabSettings" style="display:none">
+    <div class="panel-body">
+
+      <div class="setting-row">
+        <div class="setting-label">⛽ Tank size</div>
+        <div class="setting-desc">How many litres you fill up in one visit. Most family cars hold <strong>50–70L</strong>, smaller cars <strong>35–45L</strong>. This affects how much you save on fuel price alone.</div>
+        <div class="setting-input-row">
+          <input class="setting-input" id="litresSetting" type="number" min="10" max="120" value="40"/>
+          <span class="setting-unit">litres</span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">🚗 Fuel economy</div>
+        <div class="setting-desc">Your car's miles per gallon. Check your trip computer or car manual. Most petrol cars average <strong>30–45 MPG</strong>. A higher number means driving further costs you less, so it's more likely to be worth going to a cheaper station.</div>
+        <div class="setting-input-row">
+          <input class="setting-input" id="mpgSetting" type="number" min="10" max="200" value="40"/>
+          <span class="setting-unit">MPG</span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">🟢 Cheap price threshold</div>
+        <div class="setting-desc">Stations at or below this price show as <strong>green</strong>. You'd fill up here without hesitation. Pre-filled from the cheapest station in your last search.</div>
+        <div class="setting-input-row">
+          <input class="setting-input" id="cheapThreshold" type="number" min="50" max="300" value="148"/>
+          <span class="setting-unit">p/litre</span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">🔴 Expensive price threshold</div>
+        <div class="setting-desc">Stations at or above this price show as <strong>red</strong>. You'd actively avoid these unless there's no alternative. Pre-filled from the most expensive station in your last search.</div>
+        <div class="setting-input-row">
+          <input class="setting-input" id="priceyThreshold" type="number" min="50" max="400" value="158"/>
+          <span class="setting-unit">p/litre</span>
+        </div>
+      </div>
+
+
+        <div class="setting-desc">
+          The app finds your <strong>nearest station</strong> to the postcode you entered. Every other station then shows whether detouring to get cheaper fuel is worth it — based on how much further it is from your postcode vs the nearest station.
+          <br><br>
+          <strong>Estimated net saving = fuel saving − cost of extra detour</strong>
+          <br><br>
+          Distance is measured from your postcode, not your actual route. If the cheaper station happens to be on your way, the real saving will be higher than shown. If it's in the opposite direction, it may be less. Use it as a guide, not an exact figure.
+        </div>
+        <div class="example-box" id="exampleBox">
+          Search for stations to see a worked example using your postcode and real prices.
+        </div>
+      </div>
+
+      <button class="setting-save" onclick="saveSettings()">Save settings</button>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <span class="drawer-title" id="drawerTitle">Stations</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <select class="pill-sort" id="sortSel" onchange="renderResults()">
+        <option value="price">Cheapest first</option>
+        <option value="dist">Nearest first</option>
+      </select>
+      <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    </div>
+  </div>
+  <div class="drawer-list" id="drawerList"></div>
+</div>
+
+<script>
+// MAP
+const map = L.map('map',{zoomControl:false}).setView([52.04,-0.76],11);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{
+  attribution:'© OpenStreetMap © CARTO',subdomains:'abcd',maxZoom:19
+}).addTo(map);
+L.control.zoom({position:'topright'}).addTo(map);
+
+// STATE
+let allStations = [], sorted = [], markers = [], circle = null;
+let panelOpen = false, drawerOpen = false;
+let lastSearchLabel = '';
+let noFuelReports = {}; // stationId -> { count, minutesAgo }
+
+// NO FUEL REPORTS
+function stationId(s) {
+  return s.id || s.slug || (s.brand + s.address).replace(/\s+/g,'').toLowerCase();
+}
+
+async function loadReports(stations) {
+  try {
+    const ids = stations.map(stationId).join(',');
+    const r   = await fetch('/.netlify/functions/get-reports?ids=' + encodeURIComponent(ids));
+    if (r.ok) noFuelReports = await r.json();
+  } catch(_) {
+    noFuelReports = {};
+  }
+}
+
+async function reportNoFuel(sid, name, btn) {
+  btn.textContent = '⚠️ Reporting…';
+  btn.classList.add('reported');
+  try {
+    await fetch('/.netlify/functions/report-no-fuel', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stationId: sid, stationName: name })
+    });
+    btn.textContent = '⚠️ Reported — thanks';
+    // Update local state immediately
+    noFuelReports[sid] = { count: (noFuelReports[sid]?.count || 0) + 1, minutesAgo: 0 };
+    renderResults();
+  } catch(_) {
+    btn.textContent = '⚠️ Report no fuel';
+    btn.classList.remove('reported');
+  }
+} // what user typed as postcode
+
+// SETTINGS
+function getSettings() {
+  return {
+    litres:          parseFloat(localStorage.getItem('ep_litres')   || '40'),
+    mpg:             parseFloat(localStorage.getItem('ep_mpg')      || '40'),
+    cheapThreshold:  parseFloat(localStorage.getItem('ep_cheap')    || '148'),
+    priceyThreshold: parseFloat(localStorage.getItem('ep_pricey')   || '158')
+  };
+}
+function saveSettings() {
+  const l  = parseFloat(document.getElementById('litresSetting').value)   || 40;
+  const m  = parseFloat(document.getElementById('mpgSetting').value)      || 40;
+  const c  = parseFloat(document.getElementById('cheapThreshold').value)  || 148;
+  const p  = parseFloat(document.getElementById('priceyThreshold').value) || 158;
+  localStorage.setItem('ep_litres',  l);
+  localStorage.setItem('ep_mpg',     m);
+  localStorage.setItem('ep_cheap',   c);
+  localStorage.setItem('ep_pricey',  p);
+  const btn = document.querySelector('.setting-save');
+  btn.textContent = '✓ Saved';
+  setTimeout(function() { btn.textContent = 'Save settings'; }, 1500);
+  renderResults();
+}
+function initSettingsPanel() {
+  const s = getSettings();
+  document.getElementById('litresSetting').value  = s.litres;
+  document.getElementById('mpgSetting').value     = s.mpg;
+
+  // Pre-fill thresholds from current search results if available, else use saved values
+  if (allStations.length) {
+    const fuel   = document.getElementById('fuelSel').value;
+    const prices = allStations.map(function(st) { return getPrice(st, fuel); }).filter(Boolean);
+    if (prices.length) {
+      const minP = Math.min(...prices);
+      const maxP = Math.max(...prices);
+      // Only pre-fill if user hasn't saved custom values yet
+      if (!localStorage.getItem('ep_cheap'))  document.getElementById('cheapThreshold').value  = minP.toFixed(1);
+      else                                     document.getElementById('cheapThreshold').value  = s.cheapThreshold;
+      if (!localStorage.getItem('ep_pricey')) document.getElementById('priceyThreshold').value = maxP.toFixed(1);
+      else                                     document.getElementById('priceyThreshold').value = s.priceyThreshold;
+      return;
+    }
+  }
+  document.getElementById('cheapThreshold').value  = s.cheapThreshold;
+  document.getElementById('priceyThreshold').value = s.priceyThreshold;
+  updateExampleBox();
+}
+
+// DYNAMIC EXAMPLE BOX
+function updateExampleBox() {
+  const box = document.getElementById('exampleBox');
+  if (!box) return;
+
+  // Need at least 2 stations and a search to have been done
+  if (!allStations.length || !lastSearchLabel) {
+    box.innerHTML = 'Search for stations to see a worked example using your postcode and real prices.';
+    return;
+  }
+
+  const fuel = document.getElementById('fuelSel').value;
+  const { litres, mpg } = getSettings();
+
+  // Find nearest station
+  const nearest = allStations.slice().sort(function(a,b) { return (a.distance||999)-(b.distance||999); })[0];
+  const nearestPrice = getPrice(nearest, fuel);
+  const nearestDist  = parseFloat(nearest.distance) || 0;
+
+  // Find cheapest station (that isn't nearest)
+  const others = allStations.filter(function(s) {
+    return (s.id||s.slug||s.brand+s.address) !== (nearest.id||nearest.slug||nearest.brand+nearest.address);
+  });
+  const cheapest = others.slice().sort(function(a,b) { return (getPrice(a,fuel)||999)-(getPrice(b,fuel)||999); })[0];
+
+  if (!nearest || !cheapest || !nearestPrice) {
+    box.innerHTML = 'No price data available for example.';
+    return;
+  }
+
+  const cheapestPrice = getPrice(cheapest, fuel);
+  if (!cheapestPrice) { box.innerHTML = 'No price data available for example.'; return; }
+
+  const cheapestDist = parseFloat(cheapest.distance) || 0;
+  const priceDiff    = nearestPrice - cheapestPrice;
+  const fuelSaving   = priceDiff * litres / 100;
+  const extraMiles   = Math.max(0, (cheapestDist - nearestDist) * 2);
+  const driveCost    = (extraMiles / mpg) * 4.54609 * cheapestPrice / 100;
+  const netSaving    = fuelSaving - driveCost;
+
+  if (priceDiff <= 0) {
+    box.innerHTML = '<strong>Example from ' + lastSearchLabel + ':</strong><br>'
+      + 'Your nearest station (' + (nearest.brand||'Station') + ', ' + nearestDist.toFixed(1) + ' mi) is already the cheapest at ' + nearestPrice.toFixed(1) + 'p. No trade-off needed.';
+    return;
+  }
+
+  const verdict = netSaving > 1.00 ? 'Worth the drive ✓'
+    : netSaving > 0.20 ? 'Small saving'
+    : netSaving >= 0   ? 'Marginal'
+    : 'Not worth the extra drive';
+
+  box.innerHTML =
+    '<strong>Example from ' + lastSearchLabel + ':</strong><br><br>'
+    + 'Nearest: <strong>' + (nearest.brand||'Station') + '</strong> ' + nearestDist.toFixed(1) + ' mi at <strong>' + nearestPrice.toFixed(1) + 'p</strong><br>'
+    + 'Cheapest: <strong>' + (cheapest.brand||'Station') + '</strong> ' + cheapestDist.toFixed(1) + ' mi at <strong>' + cheapestPrice.toFixed(1) + 'p</strong><br><br>'
+    + 'Fuel saving: ' + priceDiff.toFixed(1) + 'p × ' + litres + 'L = <strong>£' + fuelSaving.toFixed(2) + '</strong><br>'
+    + (extraMiles > 0.05
+      ? 'Extra detour from ' + lastSearchLabel + ': ' + extraMiles.toFixed(1) + ' mi = <strong>£' + driveCost.toFixed(2) + ' cost</strong><br>'
+      : 'Similar distance — no meaningful detour<br>')
+    + 'Estimated net: <span class="result">£' + netSaving.toFixed(2) + ' — ' + verdict + '</span><br>'
+    + '<span style="color:#CBD2D9;font-size:.9em">Distance from postcode only — actual saving depends on your route</span>';
+}
+
+// TABS
+function switchTab(tab) {
+  document.getElementById('tabSearch').style.display   = tab === 'search'   ? 'block' : 'none';
+  document.getElementById('tabSettings').style.display = tab === 'settings' ? 'block' : 'none';
+  document.getElementById('tab-search').classList.toggle('active',   tab === 'search');
+  document.getElementById('tab-settings').classList.toggle('active', tab === 'settings');
+  if (tab === 'settings') initSettingsPanel();
+}
+
+// PRICE HELPERS
+function getPrice(s, fuel) {
+  fuel = fuel || document.getElementById('fuelSel').value;
+  if (s.price && +s.price > 50) return +s.price;
+  if (s.prices) {
+    const keys = { E10:['E10','e10'], E5:['E5','e5'], B7:['B7','b7'], SDV:['SDV','sdv'] };
+    for (const k of (keys[fuel] || [])) {
+      if (s.prices[k] && +s.prices[k] > 50) return +s.prices[k];
+    }
+  }
+  for (const v of Object.values(s)) {
+    if (typeof v === 'number' && v > 50 && v < 400) return v;
+  }
+  return null;
+}
+function getAllFuelPrices(s) {
+  const labels = { E10:'Petrol', E5:'Super', B7:'Diesel', SDV:'SDV' };
+  const result = [];
+  const src = s.prices || s;
+  for (const [k, label] of Object.entries(labels)) {
+    if (src[k] && +src[k] > 50) result.push({ key:k, label, val:+src[k] });
+  }
+  return result;
+}
+function pCol(p) {
+  if (!p) return '#aaa';
+  const s = getSettings();
+  return p <= s.cheapThreshold ? '#16a34a' : p < s.priceyThreshold ? '#b45309' : '#dc2626';
+}
+function pCls(p) {
+  if (!p) return '';
+  const s = getSettings();
+  return p <= s.cheapThreshold ? 'cheap' : p < s.priceyThreshold ? 'mid' : 'pricey';
+}
+function pTag(price, prices) {
+  if (!price || !prices.length) return null;
+  const mn = Math.min(...prices), mx = Math.max(...prices);
+  const pos = mx === mn ? 0.5 : (price - mn) / (mx - mn);
+  return pos <= .33 ? ['tag-cheap','Cheapest'] : pos <= .66 ? ['tag-mid','Average'] : ['tag-pricey','Pricey'];
+}
+
+// SAVINGS
+function calcSaving(s, nearestPrice, nearestDist) {
+  const { litres, mpg } = getSettings();
+  const targetPrice = getPrice(s);
+  if (!targetPrice || !nearestPrice) return null;
+  const targetDist  = parseFloat(s.distance) || 0;
+  const fuelSaving  = (nearestPrice - targetPrice) * litres / 100;
+  const extraMiles  = Math.max(0, (targetDist - nearestDist) * 2);
+  const driveCost   = (extraMiles / mpg) * 4.54609 * targetPrice / 100;
+  const netSaving   = fuelSaving - driveCost;
+  return { netSaving, fuelSaving, driveCost, extraMiles, targetPrice, nearestPrice, litres };
+}
+
+function savingBlock(saving, isNearest, idx) {
+  if (isNearest) {
+    return '<div class="saving-block is-nearest">'
+      + '<span class="saving-amount is-nearest">📍 Nearest to ' + (lastSearchLabel || 'your postcode') + '</span>'
+      + '<span class="saving-verdict is-nearest">Detour savings on other stations measured from here</span>'
+      + '</div>';
+  }
+  if (!saving) return '';
+  const { netSaving, fuelSaving, driveCost, extraMiles } = saving;
+  let cls, verdict;
+  if      (netSaving > 1.00) { cls = 'worth-it';    verdict = 'Worth the detour ✓'; }
+  else if (netSaving > 0.20) { cls = 'small-saving'; verdict = 'Small saving on detour'; }
+  else if (netSaving >= 0)   { cls = 'not-worth';    verdict = 'Detour probably not worth it'; }
+  else                        { cls = 'not-worth';    verdict = 'Detour not worth it'; }
+  const sign = netSaving >= 0 ? '+' : '−';
+  const detail =
+    'Fuel saving: £' + fuelSaving.toFixed(2) + ' (' + Math.abs(saving.nearestPrice - saving.targetPrice).toFixed(1) + 'p/L × ' + saving.litres + 'L)<br>'
+    + (extraMiles > 0.05
+      ? 'Extra distance from ' + lastSearchLabel + ': ' + extraMiles.toFixed(1) + ' mi → £' + driveCost.toFixed(2) + ' cost<br>'
+      : 'Similar distance from ' + lastSearchLabel + '<br>')
+    + 'Estimated net: ' + sign + '£' + Math.abs(netSaving).toFixed(2) + '<br>'
+    + '<span style="color:#CBD2D9;font-size:.9em">Distance measured from your postcode — actual saving depends on your route</span>';
+  return '<div class="saving-block ' + cls + '" onclick="event.stopPropagation();toggleDetail(' + idx + ')">'
+    + '<span class="saving-amount ' + cls + '">' + sign + '£' + Math.abs(netSaving).toFixed(2) + ' if you detour here</span>'
+    + '<span class="saving-verdict ' + cls + '" id="sv-' + idx + '">' + verdict + ' · tap for detail ▾</span>'
+    + '</div>'
+    + '<div class="saving-detail" id="sd-' + idx + '">' + detail + '</div>';
+}
+
+function toggleDetail(idx) {
+  const el = document.getElementById('sd-' + idx);
+  if (!el) return;
+  el.classList.toggle('open');
+  const lbl = document.getElementById('sv-' + idx);
+  if (lbl) {
+    const base = lbl.textContent.replace(' ▾','').replace(' ▴','');
+    lbl.textContent = base + (el.classList.contains('open') ? ' ▴' : ' ▾');
+  }
+}
+
+// MAP PIN
+function mkIcon(price, active, isNearest) {
+  const col    = pCol(price);
+  const sz     = active ? 40 : 32;
+  const fs     = active ? 8.5 : 7.5;
+  const lbl    = price ? price.toFixed(1) + 'p' : '?';
+  const border = active ? '#F2C94C' : isNearest ? '#F2C94C' : col;
+  const shadow = active ? '0 3px 8px rgba(242,201,76,.5)' : '0 1px 4px rgba(0,0,0,.22)';
+  return L.divIcon({
+    className: '',
+    html: '<div style="position:relative;width:' + sz + 'px;height:' + sz + 'px;filter:drop-shadow(' + shadow + ')">'
+      + '<div style="position:absolute;inset:0;background:' + col + ';border:' + (isNearest ? '2.5px' : '2px') + ' solid ' + border + ';border-radius:50% 50% 50% 0;transform:rotate(-45deg)"></div>'
+      + '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding-bottom:3px;color:#fff;font-family:Arial,sans-serif;font-weight:700;font-size:' + fs + 'px;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.4)">' + lbl + '</div>'
+      + '</div>',
+    iconSize: [sz, sz], iconAnchor: [sz/2, sz]
+  });
+}
+function shortBrand(s) {
+  const first = (s.brand || s.name || '').split(' ')[0];
+  return first.length > 7 ? first.slice(0,6) + '.' : first;
+}
+
+// POPUP
+function buildPopup(s, isNearest) {
+  const fuel   = document.getElementById('fuelSel').value;
+  const LABELS = { E10:'Petrol', E5:'Super', B7:'Diesel', SDV:'SDV' };
+  const rows   = [];
+  const src    = s.prices || s;
+  for (const [k, label] of Object.entries(LABELS)) {
+    if (src[k] && +src[k] > 50 && +src[k] < 400) rows.push({ label, val:+src[k], key:k });
+  }
+  if (!rows.length && s.price && +s.price > 50) rows.push({ label: LABELS[fuel]||fuel, val:+s.price, key:fuel });
+  const sid     = stationId(s);
+  const report  = noFuelReports[sid];
+  const mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.brand||s.name||'') + ' ' + (s.address||''));
+  const priceRows = rows.map(function(r) {
+    return '<div style="display:flex;justify-content:space-between;gap:14px;padding:4px 0;border-bottom:1px solid #E4E7EB;font-size:.72rem">'
+      + '<span style="color:#7B8794;font-family:ui-monospace,monospace;font-size:.65rem;text-transform:uppercase;letter-spacing:.04em">' + r.label + (r.key===fuel?' ✓':'') + '</span>'
+      + '<span style="font-weight:700;color:' + pCol(r.val) + '">' + r.val.toFixed(1) + 'p</span>'
+      + '</div>';
+  }).join('');
+  const updated = s.price_updated
+    ? '<div style="font-size:.55rem;color:#CBD2D9;margin-top:7px;font-family:ui-monospace,monospace">Updated ' + new Date(s.price_updated).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + '</div>'
+    : '';
+  const nearestBar = isNearest
+    ? '<div style="margin-top:9px;padding:5px 8px;background:#FEFAEC;border:1.5px solid #F2C94C;border-radius:3px;font-family:ui-monospace,monospace;font-size:.62rem;color:#946C00;font-weight:700">📍 Nearest to ' + (lastSearchLabel||'your postcode') + ' — detour savings measured from here</div>'
+    : '';
+  const noFuelBar = report
+    ? '<div style="margin-top:7px;padding:5px 8px;background:#fee2e2;border:1.5px solid #fca5a5;border-left:3px solid #dc2626;border-radius:3px;font-family:ui-monospace,monospace;font-size:.62rem;color:#dc2626;font-weight:700">⚠️ No fuel reported ' + report.minutesAgo + ' min ago (' + report.count + ' report' + (report.count > 1 ? 's' : '') + ')</div>'
+    : '';
+  const reportBtnHtml = report
+    ? '<div style="margin-top:6px;font-family:ui-monospace,monospace;font-size:.6rem;color:#fca5a5;text-align:center">Already reported — expires in ' + (120 - report.minutesAgo) + ' min</div>'
+    : '<button onclick="reportNoFuel(\'' + sid.replace(/'/g,"\\'") + '\',\'' + (s.brand||s.name||'').replace(/'/g,"\\'") + '\',this)" style="margin-top:8px;width:100%;padding:6px;border-radius:3px;border:1px solid #E4E7EB;background:#F5F6F7;color:#7B8794;font-family:ui-monospace,monospace;font-size:.62rem;cursor:pointer;display:block">⚠️ Report no fuel here</button>';
+  return '<div style="font-family:ui-monospace,monospace;padding:12px 14px;min-width:210px">'
+    + '<div style="font-family:-apple-system,sans-serif;font-weight:800;font-size:.88rem;margin-bottom:1px;color:#1F2933">' + (s.brand||s.name||'Station') + '</div>'
+    + '<a href="' + mapsUrl + '" target="_blank" style="font-size:.6rem;color:#7B8794;margin-bottom:8px;line-height:1.4;display:block;text-decoration:none" onmouseover="this.style.color=\'#946C00\'" onmouseout="this.style.color=\'#7B8794\'">📍 ' + (s.address||'') + ' ↗</a>'
+    + (priceRows || '<div style="color:#CBD2D9;font-size:.68rem">No price data</div>')
+    + updated
+    + noFuelBar
+    + nearestBar
+    + reportBtnHtml
+    + '</div>';
+}
+
+// RENDER
+function renderResults() {
+  const fuel   = document.getElementById('fuelSel').value;
+  const by     = document.getElementById('sortSel').value;
+  const prices = allStations.map(function(s) { return getPrice(s, fuel); }).filter(Boolean);
+
+  sorted = allStations.slice().sort(function(a,b) {
+    return by === 'price'
+      ? (getPrice(a,fuel)||999) - (getPrice(b,fuel)||999)
+      : (a.distance||999) - (b.distance||999);
+  });
+
+  // Always nearest station as reference
+  const nearestStation = allStations.slice().sort(function(a,b) { return (a.distance||999)-(b.distance||999); })[0];
+  const nearestId      = nearestStation ? (nearestStation.id||nearestStation.slug||nearestStation.brand+nearestStation.address) : null;
+  const nearestPrice   = nearestStation ? getPrice(nearestStation, fuel) : null;
+  const nearestDist    = nearestStation ? parseFloat(nearestStation.distance)||0 : 0;
+
+  // Clear markers
+  markers.forEach(function(m) {
+    if (!m) return;
+    if (m._labelMarker) map.removeLayer(m._labelMarker);
+    map.removeLayer(m);
+  });
+  markers = [];
+
+  document.getElementById('pillCount').textContent = sorted.length + ' station' + (sorted.length !== 1 ? 's' : '');
+  document.getElementById('resultsPill').classList.add('show');
+  document.getElementById('drawerTitle').textContent = sorted.length + ' Station' + (sorted.length !== 1 ? 's' : '') + ' nearby';
+
+  const list = document.getElementById('drawerList');
+  list.innerHTML = '';
+
+  sorted.forEach(function(s, i) {
+    const price      = getPrice(s, fuel);
+    const cls        = pCls(price);
+    const tag        = pTag(price, prices);
+    const fuelPrices = getAllFuelPrices(s);
+    const sid        = stationId(s);
+    const isNearest  = sid === nearestId;
+    const saving     = isNearest ? null : calcSaving(s, nearestPrice, nearestDist);
+    const report     = noFuelReports[sid];
+    const mapsUrl    = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((s.brand||s.name||'') + ' ' + (s.address||''));
+    const chips      = fuelPrices.map(function(f) { return '<span class="c-chip">' + f.label + '</span>'; }).join('');
+    const others     = fuelPrices.filter(function(f) { return f.key !== fuel; })
+      .map(function(f) { return '<div class="orow"><span>' + f.label + '</span><span class="oval">' + f.val.toFixed(1) + 'p</span></div>'; }).join('');
+
+    const noFuelWarning = report
+      ? '<div class="no-fuel-warning">⚠️ No fuel reported ' + report.minutesAgo + ' min ago (' + report.count + ' report' + (report.count > 1 ? 's' : '') + ')</div>'
+      : '';
+    const reportBtn = report
+      ? '<button class="no-fuel-btn reported" disabled>⚠️ Already reported</button>'
+      : '<button class="no-fuel-btn" onclick="event.stopPropagation();reportNoFuel(\'' + sid.replace(/'/g,"\\'") + '\',\'' + (s.brand||s.name||'').replace(/'/g,"\\'") + '\',this)">⚠️ Report no fuel here</button>';
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.i = i;
+    card.innerHTML =
+      '<div>'
+      + '<div class="c-rank">#' + (i+1) + (isNearest ? '<span class="c-nearest-badge">Nearest</span>' : '') + '</div>'
+      + '<div class="c-brand">' + (s.brand||s.name||'Station') + '</div>'
+      + '<a class="c-addr" href="' + mapsUrl + '" target="_blank" onclick="event.stopPropagation()">📍 ' + (s.address||'') + ' ↗</a>'
+      + '<div class="c-meta">'
+        + (s.distance != null ? '<span class="c-dist">' + (+s.distance).toFixed(1) + ' mi</span>' : '')
+        + chips
+      + '</div>'
+      + noFuelWarning
+      + reportBtn
+      + '</div>'
+      + '<div class="pcol">'
+        + (price
+          ? '<div class="mprice ' + cls + '">' + price.toFixed(1) + '</div>'
+            + '<span class="punit">p/litre</span>'
+            + (tag ? '<span class="ptag ' + tag[0] + '">' + tag[1] + '</span>' : '')
+          : '<div style="color:var(--navy-60);font-size:.7rem;margin-top:4px">—</div>')
+        + '<div class="others">' + others + '</div>'
+        + savingBlock(saving, isNearest, i)
+      + '</div>';
+
+    card.addEventListener('click', function() { selectStation(i); });
+    list.appendChild(card);
+
+    if (s.lat && s.lng) {
+      const mk    = L.marker([+s.lat, +s.lng], { icon: mkIcon(price, false, isNearest) });
+      const brand = shortBrand(s);
+      if (brand) {
+        const lbl = L.divIcon({
+          className: '',
+          html: '<div style="font-family:-apple-system,sans-serif;font-weight:700;font-size:8px;color:#1F2933;background:rgba(254,250,236,.92);border:1px solid #F2C94C;padding:1px 4px;border-radius:2px;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.12);margin-top:2px">' + brand + '</div>',
+          iconSize: [60,16], iconAnchor: [30,0]
+        });
+        const lm = L.marker([+s.lat, +s.lng], { icon:lbl, interactive:false, zIndexOffset:-100 });
+        lm.addTo(map);
+        mk._labelMarker = lm;
+      }
+      mk.bindPopup(buildPopup(s, isNearest), { maxWidth:250 });
+      mk.on('click', function() { selectStation(i); });
+      mk.addTo(map);
+      markers.push(mk);
+    } else {
+      markers.push(null);
+    }
+  });
+
+  openDrawer();
+}
+
+function selectStation(i) {
+  document.querySelectorAll('.card').forEach(function(c,idx) { c.classList.toggle('on', idx===i); });
+  const fuel = document.getElementById('fuelSel').value;
+  markers.forEach(function(m, idx) {
+    if (m) m.setIcon(mkIcon(getPrice(sorted[idx], fuel), idx===i, false));
+  });
+  const mk = markers[i];
+  if (mk) { map.panTo(mk.getLatLng(), {animate:true}); setTimeout(function(){mk.openPopup();}, 300); }
+  var card = document.querySelector('.card[data-i="' + i + '"]');
+  if (card) card.scrollIntoView({behavior:'smooth', block:'nearest'});
+  closePanel();
+}
+
+// GEOCODING
+async function resolvePostcode(raw) {
+  const q = raw.trim().toUpperCase();
+  const s = q.replace(/\s+/g, '');
+  const candidates = new Set();
+  if (s.length >= 5) candidates.add(s.slice(0, s.length-3) + ' ' + s.slice(-3));
+  candidates.add(q); candidates.add(s);
+  for (const pc of candidates) {
+    try {
+      const r = await fetch('https://api.postcodes.io/postcodes/' + encodeURIComponent(pc));
+      const d = await r.json();
+      if (d.status === 200) return { lat: d.result.latitude, lng: d.result.longitude };
+    } catch(_) {}
+  }
+  try {
+    const r = await fetch('https://nominatim.openstreetmap.org/search?postalcode=' + encodeURIComponent(s) + '&countrycodes=gb&format=json&limit=1', { headers:{'Accept-Language':'en','User-Agent':'ExpensivePetroleum/1.0'} });
+    const d = await r.json();
+    if (d && d.length) return { lat: parseFloat(d[0].lat), lng: parseFloat(d[0].lon) };
+  } catch(_) {}
+  const out = s.length > 3 ? s.slice(0, s.length-3) : s;
+  try {
+    const r = await fetch('https://api.postcodes.io/postcodes/' + encodeURIComponent(out) + '/autocomplete');
+    const d = await r.json();
+    if (d.status === 200 && d.result && d.result.length) {
+      const r2 = await fetch('https://api.postcodes.io/postcodes/' + encodeURIComponent(d.result[0]));
+      const d2 = await r2.json();
+      if (d2.status === 200) return { lat: d2.result.latitude, lng: d2.result.longitude };
+    }
+  } catch(_) {}
+  throw new Error('"' + q + '" not found. Please check the postcode.');
+}
+
+// SEARCH
+async function doSearch(oLat, oLng) {
+  hideErr(); showLoading(true);
+  allStations = []; sorted = [];
+  markers.forEach(function(m) { if(m){if(m._labelMarker)map.removeLayer(m._labelMarker);map.removeLayer(m);} });
+  markers = [];
+  if (circle) { map.removeLayer(circle); circle = null; }
+  document.getElementById('resultsPill').classList.remove('show');
+  try {
+    var lat = oLat, lng = oLng;
+    if (lat == null) {
+      lastSearchLabel = document.getElementById('pcInput').value.trim().toUpperCase();
+      var loc = await resolvePostcode(lastSearchLabel);
+      lat = loc.lat; lng = loc.lng;
+    } else {
+      lastSearchLabel = 'your location';
+    }
+    var fuel   = document.getElementById('fuelSel').value;
+    var radius = document.getElementById('radSel').value;
+    var url = '/.netlify/functions/stations?lat=' + lat + '&lng=' + lng + '&fuel=' + fuel + '&radius=' + radius;
+    var r = await fetch(url);
+    if (!r.ok) throw new Error('Price service error (' + r.status + '). Try again shortly.');
+    var raw = await r.json();
+    var list = (raw.stations || raw || []).filter(function(s) { return s && s.lat && s.lng; });
+    if (!list.length) throw new Error('No stations found within ' + radius + ' miles. Try a wider radius.');
+    allStations = list;
+    await loadReports(list);
+    circle = L.circle([lat, lng], { radius: +radius*1609.34, color:'#F2C94C', weight:1.5, opacity:.4, fillColor:'#F2C94C', fillOpacity:.04 }).addTo(map);
+    map.setView([lat, lng], +radius<=3?13:+radius<=5?12:+radius<=10?11:10, {animate:true});
+    renderResults();
+    closePanel();
+  } catch(e) {
+    showErr(e.message || 'Something went wrong.');
+  }
+  showLoading(false);
+}
+
+function useGPS() {
+  if (!navigator.geolocation) { showErr('Geolocation not supported.'); return; }
+  hideErr(); showLoading(true);
+  navigator.geolocation.getCurrentPosition(
+    function(p) { doSearch(p.coords.latitude, p.coords.longitude); },
+    function()  { showErr('Could not get location. Enter a postcode instead.'); showLoading(false); }
+  );
+}
+
+// UI
+function togglePanel() { panelOpen ? closePanel() : openPanel(); }
+function openPanel() {
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('fab').classList.add('open');
+  document.getElementById('fab').querySelector('span').textContent = '✕';
+  panelOpen = true;
+}
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('fab').classList.remove('open');
+  document.getElementById('fab').querySelector('span').textContent = '⛽';
+  panelOpen = false;
+}
+function openDrawer()  { document.getElementById('drawer').classList.add('open');    drawerOpen = true; }
+function closeDrawer() { document.getElementById('drawer').classList.remove('open'); drawerOpen = false; }
+function showLoading(on) {
+  document.getElementById('loadingOverlay').classList.toggle('show', on);
+  document.getElementById('btnSearch').disabled    = on;
+  document.getElementById('btnSearch').textContent = on ? '…' : 'Search';
+}
+function showErr(m) {
+  var e = document.getElementById('errMsg');
+  e.textContent = '⚠ ' + m; e.style.display = 'block';
+  if (!panelOpen) openPanel();
+}
+function hideErr()     { document.getElementById('errMsg').style.display = 'none'; }
+function onPcInput(el) { document.getElementById('pcClear').classList.toggle('show', el.value.length > 0); }
+function clearPc()     { document.getElementById('pcInput').value = ''; document.getElementById('pcClear').classList.remove('show'); document.getElementById('pcInput').focus(); }
+
+document.getElementById('pcInput').addEventListener('keydown', function(e) { if (e.key==='Enter') { e.preventDefault(); doSearch(); } });
+map.on('click', function() { if (panelOpen) closePanel(); });
+window.addEventListener('load', function() { setTimeout(openPanel, 400); });
+</script>
+</body>
+</html>
