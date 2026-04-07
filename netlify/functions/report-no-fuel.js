@@ -1,6 +1,6 @@
 const { getStore } = require('@netlify/blobs');
 
-exports.handler = async function(event) {
+exports.handler = async function(event, context) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -17,26 +17,28 @@ exports.handler = async function(event) {
 
     const store = getStore('fuel-reports');
     const now   = Date.now();
-
-    // Load existing reports for this station
     let reports = [];
+
     try {
       const existing = await store.get(stationId, { type: 'json' });
-      if (existing) reports = existing;
+      if (Array.isArray(existing)) reports = existing;
     } catch(_) {}
 
-    // Add new report, keep only last 10
     reports.push({ ts: now, name: stationName || '' });
     reports = reports.slice(-10);
 
-    await store.set(stationId, JSON.stringify(reports));
+    await store.setJSON(stationId, reports);
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ ok: true, reports: reports.length })
+      body: JSON.stringify({ ok: true, count: reports.length })
     };
   } catch(e) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: e.message }) };
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: e.message })
+    };
   }
 };

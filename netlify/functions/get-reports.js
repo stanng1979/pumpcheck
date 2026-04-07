@@ -10,18 +10,20 @@ exports.handler = async function(event) {
   };
 
   try {
-    const ids = (event.queryStringParameters?.ids || '').split(',').filter(Boolean);
+    const ids = (event.queryStringParameters && event.queryStringParameters.ids
+      ? event.queryStringParameters.ids
+      : '').split(',').filter(Boolean);
+
     if (!ids.length) return { statusCode: 200, headers, body: JSON.stringify({}) };
 
-    const store   = getStore('fuel-reports');
-    const now     = Date.now();
-    const result  = {};
+    const store  = getStore('fuel-reports');
+    const now    = Date.now();
+    const result = {};
 
     await Promise.all(ids.map(async function(id) {
       try {
         const raw = await store.get(id, { type: 'json' });
-        if (!raw) return;
-        // Filter to only reports within expiry window
+        if (!Array.isArray(raw)) return;
         const recent = raw.filter(function(r) { return (now - r.ts) < EXPIRY_MS; });
         if (recent.length) {
           result[id] = {
