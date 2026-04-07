@@ -137,7 +137,22 @@ select.pill-sort:focus{border-color:var(--amber)}
 .saving-detail{font-family:var(--mono);font-size:.58rem;color:var(--navy-60);margin-top:4px;padding:6px 8px;line-height:1.7;border-top:1px solid var(--border);display:none;background:var(--navy-10);border-radius:0 0 3px 3px}
 .saving-detail.open{display:block}
 
-/* LOADING */
+/* WELCOME SCREEN */
+.welcome-overlay{position:fixed;inset:0;z-index:3000;background:rgba(31,41,51,.75);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px}
+.welcome-overlay.gone{display:none}
+.welcome-card{background:var(--navy);border:3px solid var(--amber);border-radius:3px;width:min(340px,100%);overflow:hidden;animation:fadein .3s ease-out}
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.welcome-head{background:var(--navy);border-bottom:3px solid var(--amber);padding:11px 14px;display:flex;align-items:center;justify-content:space-between}
+.welcome-body{padding:24px 20px 22px;display:flex;flex-direction:column;gap:0}
+.welcome-headline{font-family:var(--sans);font-weight:800;font-size:1.12rem;color:var(--white);line-height:1.3;margin-bottom:11px}
+.welcome-sub{font-family:var(--mono);font-size:.72rem;color:var(--amber);line-height:1.5;margin-bottom:14px}
+.welcome-explainer{background:rgba(255,255,255,.07);border-left:3px solid var(--amber);border-radius:0 3px 3px 0;padding:9px 12px;margin-bottom:20px;font-family:var(--mono);font-size:.68rem;color:rgba(255,255,255,.65);line-height:1.6}
+.welcome-steps{display:flex;flex-direction:column;gap:9px;margin-bottom:22px}
+.welcome-step{display:flex;align-items:center;gap:10px}
+.welcome-step-num{width:22px;height:22px;background:var(--amber);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--sans);font-size:.65rem;color:var(--navy);font-weight:800}
+.welcome-step-text{font-family:var(--mono);font-size:.68rem;color:rgba(255,255,255,.7);line-height:1.4}
+.welcome-btn{background:var(--amber);color:var(--navy);border:none;font-family:var(--sans);font-weight:800;font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;padding:12px;border-radius:3px;cursor:pointer;width:100%;transition:opacity .15s}
+.welcome-btn:hover{opacity:.88}
 .loading-overlay{position:fixed;inset:0;z-index:2000;background:rgba(31,41,51,.65);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
 .loading-overlay.show{display:flex}
 .spin-ring{width:34px;height:34px;border:3px solid rgba(242,201,76,.2);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite}
@@ -309,15 +324,61 @@ async function loadReports(stations) {
   try {
     const ids = stations.map(stationId).join(',');
     const r   = await fetch('/.netlify/functions/get-reports?ids=' + encodeURIComponent(ids));
-    if (r.ok) noFuelReports = await r.json();
+    if (r.ok) {
+      noFuelReports = await r.json();
+      refreshReportBadges();
+    }
   } catch(_) {
     noFuelReports = {};
   }
 }
 
+function refreshReportBadges() {
+  document.querySelectorAll('.card').forEach(function(card) {
+    const idx = parseInt(card.dataset.i);
+    if (isNaN(idx) || !sorted[idx]) return;
+    const sid    = stationId(sorted[idx]);
+    const report = noFuelReports[sid];
+
+    // Update or insert warning
+    var warn = card.querySelector('.no-fuel-warning');
+    if (report && !warn) {
+      var btn = card.querySelector('.no-fuel-btn');
+      if (btn) {
+        var div = document.createElement('div');
+        div.className = 'no-fuel-warning';
+        div.innerHTML = '⚠️ No fuel reported ' + report.minutesAgo + ' min ago (' + report.count + ' report' + (report.count>1?'s':'') + ')';
+        btn.parentNode.insertBefore(div, btn);
+      }
+    } else if (report && warn) {
+      warn.innerHTML = '⚠️ No fuel reported ' + report.minutesAgo + ' min ago (' + report.count + ' report' + (report.count>1?'s':'') + ')';
+    } else if (!report && warn) {
+      warn.remove();
+    }
+
+    // Update button state
+    var btn2 = card.querySelector('.no-fuel-btn');
+    if (btn2 && report && !btn2.classList.contains('reported')) {
+      btn2.textContent = '⚠️ Already reported';
+      btn2.classList.add('reported');
+      btn2.disabled = true;
+    }
+  });
+}
+
+// Auto-refresh reports every 60 seconds
+var reportRefreshTimer = null;
+function startReportRefresh() {
+  if (reportRefreshTimer) clearInterval(reportRefreshTimer);
+  reportRefreshTimer = setInterval(function() {
+    if (allStations.length) loadReports(allStations);
+  }, 60000);
+}
+
 async function reportNoFuel(sid, name, btn) {
   btn.textContent = '⚠️ Reporting…';
   btn.classList.add('reported');
+  btn.disabled = true;
   try {
     await fetch('/.netlify/functions/report-no-fuel', {
       method: 'POST',
@@ -325,14 +386,14 @@ async function reportNoFuel(sid, name, btn) {
       body: JSON.stringify({ stationId: sid, stationName: name })
     });
     btn.textContent = '⚠️ Reported — thanks';
-    // Update local state immediately
     noFuelReports[sid] = { count: (noFuelReports[sid]?.count || 0) + 1, minutesAgo: 0 };
-    renderResults();
+    refreshReportBadges();
   } catch(_) {
-    btn.textContent = '⚠️ Report no fuel';
+    btn.textContent = '⚠️ Report no fuel here';
     btn.classList.remove('reported');
+    btn.disabled = false;
   }
-} // what user typed as postcode
+}
 
 // SETTINGS
 function getSettings() {
@@ -791,6 +852,7 @@ async function doSearch(oLat, oLng) {
     if (!list.length) throw new Error('No stations found within ' + radius + ' miles. Try a wider radius.');
     allStations = list;
     await loadReports(list);
+    startReportRefresh();
     circle = L.circle([lat, lng], { radius: +radius*1609.34, color:'#F2C94C', weight:1.5, opacity:.4, fillColor:'#F2C94C', fillOpacity:.04 }).addTo(map);
     map.setView([lat, lng], +radius<=3?13:+radius<=5?12:+radius<=10?11:10, {animate:true});
     renderResults();
@@ -842,7 +904,40 @@ function clearPc()     { document.getElementById('pcInput').value = ''; document
 
 document.getElementById('pcInput').addEventListener('keydown', function(e) { if (e.key==='Enter') { e.preventDefault(); doSearch(); } });
 map.on('click', function() { if (panelOpen) closePanel(); });
-window.addEventListener('load', function() { setTimeout(openPanel, 400); });
+function dismissWelcome() {
+  document.getElementById('welcomeOverlay').classList.add('gone');
+  localStorage.setItem('ep_welcomed', '1');
+  setTimeout(openPanel, 300);
+}
+
+window.addEventListener('load', function() {
+  if (localStorage.getItem('ep_welcomed')) {
+    document.getElementById('welcomeOverlay').classList.add('gone');
+    setTimeout(openPanel, 400);
+  }
+  // else welcome screen stays visible, openPanel called after dismissWelcome
+});
 </script>
+<!-- Welcome screen -->
+<div class="welcome-overlay" id="welcomeOverlay">
+  <div class="welcome-card">
+    <div class="welcome-head">
+      <div class="panel-logo"><div class="panel-logo-dot"></div>🪄 Expensive<br>Petroleum</div>
+      <div class="live-pill">"Expensive Petroleum"<br>— Ron Weasley</div>
+    </div>
+    <div class="welcome-body">
+      <div class="welcome-headline">Don't drive for cheaper petrol unless it actually saves you money</div>
+      <div class="welcome-sub">Most fuel apps show prices.<br>This shows whether it's worth the trip.</div>
+      <div class="welcome-explainer">We factor in distance, fuel usage and tank size to tell you the real saving — not just the price.</div>
+      <div class="welcome-steps">
+        <div class="welcome-step"><div class="welcome-step-num">1</div><div class="welcome-step-text">Enter your postcode or use GPS</div></div>
+        <div class="welcome-step"><div class="welcome-step-num">2</div><div class="welcome-step-text">See live prices on a map</div></div>
+        <div class="welcome-step"><div class="welcome-step-num">3</div><div class="welcome-step-text">See if the cheaper station is actually worth the detour</div></div>
+      </div>
+      <button class="welcome-btn" onclick="dismissWelcome()">Got it — find petrol ⛽</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
