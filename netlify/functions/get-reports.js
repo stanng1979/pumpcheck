@@ -1,5 +1,5 @@
-const { getStore } = require('@netlify/blobs');
-
+const BIN_ID = '69d4cbfbaaba882197d12fe7';
+const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 const EXPIRY_MS = 2 * 60 * 60 * 1000; // 2 hours
 
 exports.handler = async function(event) {
@@ -16,24 +16,30 @@ exports.handler = async function(event) {
 
     if (!ids.length) return { statusCode: 200, headers, body: JSON.stringify({}) };
 
-    const store  = getStore('fuel-reports');
+    const apiKey = process.env.JSONBIN_KEY;
+
+    // Read current bin
+    const readRes = await fetch(BIN_URL + '/latest', {
+      headers: { 'X-Master-Key': apiKey }
+    });
+    const readData = await readRes.json();
+    const bin = readData.record || {};
+
     const now    = Date.now();
     const result = {};
 
-    await Promise.all(ids.map(async function(id) {
-      try {
-        const raw = await store.get(id, { type: 'json' });
-        if (!Array.isArray(raw)) return;
-        const recent = raw.filter(function(r) { return (now - r.ts) < EXPIRY_MS; });
-        if (recent.length) {
-          result[id] = {
-            count: recent.length,
-            latest: recent[recent.length - 1].ts,
-            minutesAgo: Math.round((now - recent[recent.length - 1].ts) / 60000)
-          };
-        }
-      } catch(_) {}
-    }));
+    ids.forEach(function(id) {
+      const reports = bin[id];
+      if (!Array.isArray(reports)) return;
+      const recent = reports.filter(function(r) { return (now - r.ts) < EXPIRY_MS; });
+      if (recent.length) {
+        result[id] = {
+          count: recent.length,
+          latest: recent[recent.length - 1].ts,
+          minutesAgo: Math.round((now - recent[recent.length - 1].ts) / 60000)
+        };
+      }
+    });
 
     return { statusCode: 200, headers, body: JSON.stringify(result) };
   } catch(e) {

@@ -1,6 +1,8 @@
-const { getStore } = require('@netlify/blobs');
+const BIN_ID = '69d4cbfbaaba882197d12fe7';
+const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
+const EXPIRY_MS = 2 * 60 * 60 * 1000; // 2 hours
 
-exports.handler = async function(event, context) {
+exports.handler = async function(event) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -15,30 +17,41 @@ exports.handler = async function(event, context) {
     const { stationId, stationName } = JSON.parse(event.body || '{}');
     if (!stationId) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing stationId' }) };
 
-    const store = getStore('fuel-reports');
-    const now   = Date.now();
-    let reports = [];
+    const apiKey = process.env.JSONBIN_KEY;
 
-    try {
-      const existing = await store.get(stationId, { type: 'json' });
-      if (Array.isArray(existing)) reports = existing;
-    } catch(_) {}
+    // Read current bin
+    const readRes = await fetch(BIN_URL + '/latest', {
+      headers: { 'X-Master-Key': apiKey }
+    });
+    const readData = await readRes.json();
+    const bin = readData.record || {};
 
-    reports.push({ ts: now, name: stationName || '' });
-    reports = reports.slice(-10);
+    // Get existing reports for this station, filter out expired ones
+    const now = Date.now();
+    const existing = (bin[stationId] || []).filter(function(r) {
+      return (now - r.ts) < EXPIRY_MS;
+    });
 
-    await store.setJSON(stationId, reports);
+    // Add new report, keep last 10
+    existing.push({ ts: now, name: stationName || '' });
+    bin[stationId] = existing.slice(-10);
+
+    // Write back
+    await fetch(BIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': apiKey
+      },
+      body: JSON.stringify(bin)
+    });
 
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ ok: true, count: reports.length })
+      body: JSON.stringify({ ok: true, count: existing.length })
     };
   } catch(e) {
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: e.message })
-    };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: e.message }) };
   }
 };
